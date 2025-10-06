@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppProvider } from "@/contexts/AppContext";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
-import Index from "./pages/Index";
+import Index from "./pages/Index.tsx";
 import NotFound from "./pages/NotFound";
 import SignedOut from "./pages/SignedOut";
 
