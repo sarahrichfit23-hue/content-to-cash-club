@@ -21,7 +21,7 @@ export default defineConfig({
   plugins: [react()],
 });
 outDir: "../dist",
-    emptyOutDir: true,   // <-- include this
+    emptyOutDir: true,   
   },
   publicDir: "../public",
 });
