@@ -3,7 +3,9 @@ import react from "@vitejs/plugin-react-swc";
 import path from "path";
 
 export default defineConfig({
-  root: "src", // 👈 tell Vite that /src is the app root
+  root: "src",
+  plugins: [react()],
+  resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
   build: {
     outDir: "../dist", // 👈 output dist folder in project root
   },
@@ -17,5 +19,10 @@ export default defineConfig({
     },
   },
   plugins: [react()],
+});
+outDir: "../dist",
+    emptyOutDir: true,   // <-- include this
+  },
+  publicDir: "../public",
 });
 
