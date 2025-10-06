@@ -2,7 +2,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
-const MODEL = 'gpt-4o-mini'; // or 'gpt-4o' if your key supports it
+const MODEL = 'gpt-4o';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   try {
