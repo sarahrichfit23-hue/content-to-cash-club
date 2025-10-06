@@ -5,24 +5,20 @@ import path from "path";
 export default defineConfig({
   root: "src",
   plugins: [react()],
-  resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
-  build: {
-    outDir: "../dist", 
-  },
-  server: {
-    host: "::",
-    port: 8080,
-  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  plugins: [react()],
-});
-outDir: "../dist",
-    emptyOutDir: true,   
+  build: {
+    outDir: "../dist",
+    emptyOutDir: true,
   },
   publicDir: "../public",
+  server: {
+    host: "::",
+    port: 8080,
+  },
 });
+
 
