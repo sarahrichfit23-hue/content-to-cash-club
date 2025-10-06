@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
   build: {
-    outDir: "../dist", // 👈 output dist folder in project root
+    outDir: "../dist", 
   },
   server: {
     host: "::",
