@@ -37,7 +37,7 @@ const App = () => (
       <AppProvider>
         <TooltipProvider>
           <Toaster />
-          <Sonner />
+         // <Sonner />
           <BrowserRouter>
             <Routes>
               {/* Public routes */}
