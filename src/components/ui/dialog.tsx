@@ -1,6 +1,8 @@
 "use client";
 import * as React from "react";
-export interface ${file^}Props extends React.HTMLAttributes<HTMLDivElement> {}
-export function ${file^}(props: ${file^}Props) {
+
+export interface DialogProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function Dialog(props: DialogProps) {
   return <div {...props} />;
 }

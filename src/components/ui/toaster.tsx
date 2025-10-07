@@ -1,7 +1,8 @@
-"use client"
+"use client";
+import * as React from "react";
 
-import { Toaster as Sonner } from "sonner"
+export interface ToasterProps extends React.HTMLAttributes<HTMLDivElement> {}
 
-export function Toaster() {
-  return <Sonner />
+export function Toaster(props: ToasterProps) {
+  return <div {...props} />;
 }
