@@ -1,8 +1,6 @@
 "use client";
 import * as React from "react";
-
-export interface SkeletonProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function Skeleton(props: SkeletonProps) {
+export interface ${file^}Props extends React.HTMLAttributes<HTMLDivElement> {}
+export function ${file^}(props: ${file^}Props) {
   return <div {...props} />;
 }
