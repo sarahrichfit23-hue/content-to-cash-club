@@ -1,8 +1,6 @@
 "use client";
 import * as React from "react";
-
-export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function Badge(props: BadgeProps) {
+export interface ${file^}Props extends React.HTMLAttributes<HTMLDivElement> {}
+export function ${file^}(props: ${file^}Props) {
   return <div {...props} />;
 }

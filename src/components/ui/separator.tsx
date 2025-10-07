@@ -1,8 +1,6 @@
 "use client";
 import * as React from "react";
-
-export interface SeparatorProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function Separator(props: SeparatorProps) {
+export interface ${file^}Props extends React.HTMLAttributes<HTMLDivElement> {}
+export function ${file^}(props: ${file^}Props) {
   return <div {...props} />;
 }
