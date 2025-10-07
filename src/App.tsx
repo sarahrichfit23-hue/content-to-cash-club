@@ -1,12 +1,11 @@
 import { Toaster } from "@/components/ui/toaster";
-import { Toaster } from "@/components/ui/toaster"
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppProvider } from "@/contexts/AppContext";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
-import Index from "./pages/Index.tsx";
+import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import SignedOut from "./pages/SignedOut";
 
@@ -27,9 +26,7 @@ import { AdminRoute } from "./components/admin/AdminRoute";
 import AdminPanel from "./pages/AdminPanel";
 import AutomationDashboard from "./components/automation/AutomationDashboard";
 
-
 const queryClient = new QueryClient();
-
 
 const App = () => (
   <ThemeProvider defaultTheme="light">
@@ -37,7 +34,6 @@ const App = () => (
       <AppProvider>
         <TooltipProvider>
           <Toaster />
-{/* <Sonner /> */}
           <BrowserRouter>
             <Routes>
               {/* Public routes */}
@@ -46,59 +42,74 @@ const App = () => (
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/signed-out" element={<SignedOut />} />
-              
+
               {/* Auth callback routes */}
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/auth/update-password" element={<UpdatePassword />} />
 
-              
               {/* Protected routes */}
-              <Route path="/dashboard" element={
-                <ErrorBoundary>
-                  <ProtectedRoute requireOnboarding>
-                    <Dashboard />
-                  </ProtectedRoute>
-                </ErrorBoundary>
-              } />
-              <Route path="/onboarding" element={
-                <ErrorBoundary>
-                  <ProtectedRoute>
-                    <OnboardingQuiz />
-                  </ProtectedRoute>
-                </ErrorBoundary>
-              } />
-              <Route path="/billing" element={
-                <ErrorBoundary>
-                  <ProtectedRoute requireOnboarding>
-                    <BillingPortal />
-                  </ProtectedRoute>
-                </ErrorBoundary>
-              } />
-              <Route path="/landing-pages" element={
-                <ErrorBoundary>
-                  <ProtectedRoute requireOnboarding>
-                    <LandingPageBuilder />
-                  </ProtectedRoute>
-                </ErrorBoundary>
-              } />
-              <Route path="/automation" element={
-                <ErrorBoundary>
-                  <ProtectedRoute requireOnboarding>
-                    <AutomationDashboard />
-                  </ProtectedRoute>
-                </ErrorBoundary>
-              } />
+              <Route
+                path="/dashboard"
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute requireOnboarding>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/onboarding"
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute>
+                      <OnboardingQuiz />
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/billing"
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute requireOnboarding>
+                      <BillingPortal />
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/landing-pages"
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute requireOnboarding>
+                      <LandingPageBuilder />
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/automation"
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute requireOnboarding>
+                      <AutomationDashboard />
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                }
+              />
               {/* Admin route */}
-              <Route path="/admin" element={
-                <ErrorBoundary>
-                  <AdminRoute>
-                    <AdminPanel />
-                  </AdminRoute>
-                </ErrorBoundary>
-              } />
-
+              <Route
+                path="/admin"
+                element={
+                  <ErrorBoundary>
+                    <AdminRoute>
+                      <AdminPanel />
+                    </AdminRoute>
+                  </ErrorBoundary>
+                }
+              />
               {/* 404 */}
-
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
@@ -107,3 +118,5 @@ const App = () => (
     </QueryClientProvider>
   </ThemeProvider>
 );
+
+export default App;
