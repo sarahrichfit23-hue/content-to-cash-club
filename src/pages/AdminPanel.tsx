@@ -8,7 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { PackUploader } from '@/components/admin/PackUploader';
 import { PackPreview } from '@/components/admin/PackPreview';
-import { toast } from 'sonner';
+import { toast } from "@/components/ui/use-toast";
 import { Loader2, Save, Trash2, Eye, History } from 'lucide-react';
 import { useAppContext } from '@/contexts/AppContext';
 import { normalizePack } from '@/lib/normalizePack';
