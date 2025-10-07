@@ -1,6 +1,8 @@
 "use client";
 import * as React from "react";
-export interface ${file^}Props extends React.HTMLAttributes<HTMLDivElement> {}
-export function ${file^}(props: ${file^}Props) {
+
+export interface AccordionProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function Accordion(props: AccordionProps) {
   return <div {...props} />;
 }

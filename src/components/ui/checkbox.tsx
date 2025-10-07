@@ -1,6 +1,8 @@
 "use client";
 import * as React from "react";
-export interface ${file^}Props extends React.HTMLAttributes<HTMLDivElement> {}
-export function ${file^}(props: ${file^}Props) {
+
+export interface CheckboxProps extends React.HTMLAttributes<HTMLDivElement> {}
+
+export function Checkbox(props: CheckboxProps) {
   return <div {...props} />;
 }
