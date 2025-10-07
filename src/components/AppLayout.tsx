@@ -17,7 +17,7 @@ import AIPersonalizer from './AIPersonalizer';
 import OnboardingQuiz from './OnboardingQuiz';
 import EmailCampaignBuilder from './EmailCampaignBuilder';
 import { AffiliateDashboard } from './affiliate/AffiliateDashboard';
-import { SupportDashboard } from './support/SupportDashboard';
+//import { SupportDashboard } from './support/SupportDashboard';
 import { SMSDashboard } from './sms/SMSDashboard';
 import { useApp } from '@/contexts/AppContext';
 import { useLocation } from 'react-router-dom';
@@ -44,9 +44,9 @@ export default function AppLayout() {
     return <AffiliateDashboard />;
   }
 
-  if (location.pathname === '/support') {
-    return <SupportDashboard />;
-  }
+  //if (location.pathname === '/support') {
+  //return <SupportDashboard />;
+  //  }
 
   if (location.pathname === '/sms') {
     return <SMSDashboard />;
