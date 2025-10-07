@@ -1,4 +1,4 @@
-mport { useState } from 'react';
+import { useState } from 'react';
 import Hero from './Hero';
 import PainSection from './PainSection';
 import Features from './Features';
