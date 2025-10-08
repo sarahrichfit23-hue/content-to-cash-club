@@ -6,9 +6,9 @@ import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import StreakTracker from './accountability/StreakTracker';
 import BadgeDisplay from './accountability/BadgeDisplay';
-import { BuddyFinder } from './accountability/BuddyFinder';
+import BuddyFinder from './accountability/BuddyFinder';
 import BuddyListWithMessages from './accountability/BuddyListWithMessages';
-import { LeaderboardSettings } from './accountability/LeaderboardSettings';
+import LeaderboardSettings from './accountability/LeaderboardSettings';
 import NotificationCenter from './accountability/NotificationCenter';
 import { AVAILABLE_BADGES } from '@/data/badges';
 
