@@ -1,8 +1,6 @@
 "use client";
 import * as React from "react";
 
-chmod +x fix_missing_components.sh
-
 ./fix_missing_components.sh
 
 git add src/components
