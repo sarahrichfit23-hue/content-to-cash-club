@@ -49,5 +49,29 @@ supabase.auth.getSession().then(({ data, error }) => {
     }
   } else {
     console.log('✅ Supabase connected successfully');
+// --- Auto-clear stale or invalid Supabase sessions ---
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'TOKEN_REFRESHED') {
+    console.log('🔄 Token refreshed successfully');
+  }
+
+  if (event === 'SIGNED_OUT') {
+    console.log('👋 User signed out');
+    await supabase.auth.signOut();
+  }
+
+  // Automatically clear stale sessions that block login
+  if (!session) {
+    console.warn('🧹 Clearing stale session');
+    try {
+      localStorage.removeItem('supabase-auth');
+      sessionStorage.clear();
+    } catch (err) {
+      console.error('Failed to clear stale session:', err);
+    }
+  }
+});
+
+
   }
 });

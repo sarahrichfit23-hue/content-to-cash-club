@@ -16,10 +16,11 @@ export default function Login() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+const handleLogin = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setLoading(true);
 
+  try {
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -32,16 +33,37 @@ export default function Login() {
         description: error.message,
         variant: "destructive",
       });
-    } else if (data?.user) {
+      setLoading(false);
+      return;
+    }
+
+    const { data: sessionData } = await supabase.auth.getSession();
+
+    if (sessionData.session) {
       toast({
         title: "Welcome back!",
         description: "You’ve logged in successfully.",
       });
       navigate("/dashboard");
+    } else {
+      console.warn("No active session found after login attempt");
+      toast({
+        title: "Login issue",
+        description: "Please try logging in again.",
+        variant: "destructive",
+      });
     }
-
+  } catch (err) {
+    console.error("Unexpected login error:", err);
+    toast({
+      title: "Unexpected error",
+      description: String(err),
+      variant: "destructive",
+    });
+  } finally {
     setLoading(false);
-  };
+  }
+};
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-background">
