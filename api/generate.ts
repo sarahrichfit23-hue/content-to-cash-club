@@ -1,21 +1,26 @@
-// api/generate.ts  (Vercel Serverless Function for Vite projects)
-import type { VercelRequest, VercelResponse } from '@vercel/node';
+// api/generate.ts — Vercel Edge Function compatible (no @vercel/node dependency)
+
+export const config = {
+  runtime: 'edge', // Run on Vercel Edge Network for speed and no Node deps
+};
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY!;
 const MODEL = 'gpt-4o';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+export default async function handler(req: Request): Promise<Response> {
   try {
     if (req.method !== 'POST') {
-      res.setHeader('Allow', 'POST');
-      return res.status(405).json({ error: 'Method Not Allowed' });
+      return new Response(JSON.stringify({ error: 'Method Not Allowed' }), {
+        status: 405,
+        headers: { Allow: 'POST' },
+      });
     }
 
     if (!OPENAI_API_KEY) {
-      return res.status(500).json({ error: 'Missing OPENAI_API_KEY' });
+      return new Response(JSON.stringify({ error: 'Missing OPENAI_API_KEY' }), { status: 500 });
     }
 
-    const body = typeof req.body === 'string' ? JSON.parse(req.body || '{}') : (req.body || {});
+    const body = await req.json().catch(() => ({}));
     const {
       template = 'Social post',
       tone = 'Friendly',
@@ -58,13 +63,20 @@ Output:
 
     if (!r.ok) {
       const t = await r.text();
-      return res.status(r.status).json({ error: 'OpenAI error', details: t });
+      return new Response(JSON.stringify({ error: 'OpenAI error', details: t }), { status: r.status });
     }
 
     const data = await r.json();
     const content = data?.choices?.[0]?.message?.content?.trim?.() ?? '[No content returned]';
-    return res.status(200).json({ content });
+
+    return new Response(JSON.stringify({ content }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
   } catch (e: any) {
-    return res.status(500).json({ error: 'Server error', details: e?.message || String(e) });
+    return new Response(JSON.stringify({ error: 'Server error', details: e?.message || String(e) }), {
+      status: 500,
+    });
   }
 }
+
