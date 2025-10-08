@@ -1,0 +1,180 @@
+2025-10-08T01:21:31.773Z vite:config bundled config file loaded in 44.92ms
+2025-10-08T01:21:31.789Z vite:config using resolved config: {
+  plugins: [
+    'vite:build-metadata',
+    'vite:watch-package-data',
+    'vite:pre-alias',
+    'alias',
+    'vite:modulepreload-polyfill',
+    'vite:resolve',
+    'vite:html-inline-proxy',
+    'vite:css',
+    'vite:esbuild',
+    'vite:json',
+    'vite:wasm-helper',
+    'vite:worker',
+    'vite:asset',
+    'vite:react-swc',
+    'vite:wasm-fallback',
+    'vite:define',
+    'vite:css-post',
+    'vite:build-html',
+    'vite:worker-import-meta-url',
+    'vite:asset-import-meta-url',
+    'vite:force-systemjs-wrap-complete',
+    'commonjs',
+    'vite:data-uri',
+    'vite:dynamic-import-vars',
+    'vite:import-glob',
+    'vite:build-import-analysis',
+    'vite:esbuild-transpile',
+    'vite:terser',
+    'vite:reporter',
+    'vite:load-fallback'
+  ],
+  resolve: {
+    mainFields: [ 'browser', 'module', 'jsnext:main', 'jsnext' ],
+    conditions: [],
+    extensions: [
+      '.mjs',  '.js',
+      '.mts',  '.ts',
+      '.jsx',  '.tsx',
+      '.json'
+    ],
+    dedupe: [],
+    preserveSymlinks: false,
+    alias: [ [Object], [Object], [Object] ]
+  },
+  build: {
+    target: [ 'es2020', 'edge88', 'firefox78', 'chrome87', 'safari14' ],
+    cssTarget: [ 'es2020', 'edge88', 'firefox78', 'chrome87', 'safari14' ],
+    outDir: 'dist',
+    assetsDir: 'assets',
+    assetsInlineLimit: 4096,
+    cssCodeSplit: true,
+    sourcemap: false,
+    rollupOptions: { onwarn: [Function: onwarn] },
+    minify: 'esbuild',
+    terserOptions: {},
+    write: true,
+    emptyOutDir: null,
+    copyPublicDir: true,
+    manifest: false,
+    lib: false,
+    ssr: false,
+    ssrManifest: false,
+    ssrEmitAssets: false,
+    reportCompressedSize: true,
+    chunkSizeWarningLimit: 500,
+    watch: null,
+    commonjsOptions: { include: [Array], extensions: [Array] },
+    dynamicImportVarsOptions: { warnOnError: true, exclude: [Array] },
+    modulePreload: { polyfill: true },
+    cssMinify: true
+  },
+  esbuild: {
+    jsxDev: false,
+    jsx: 'automatic',
+    jsxImportSource: 'react',
+    tsconfigRaw: { compilerOptions: [Object] }
+  },
+  configFile: '/Users/sarahrichardson/Downloads/premium-coaches-content/vite.config.ts',
+  configFileDependencies: [
+    '/Users/sarahrichardson/Downloads/premium-coaches-content/vite.config.ts'
+  ],
+  inlineConfig: {
+    root: undefined,
+    base: undefined,
+    mode: undefined,
+    configFile: undefined,
+    logLevel: undefined,
+    clearScreen: undefined,
+    build: {}
+  },
+  root: '/Users/sarahrichardson/Downloads/premium-coaches-content',
+  base: '/',
+  decodedBase: '/',
+  rawBase: '/',
+  publicDir: '/Users/sarahrichardson/Downloads/premium-coaches-content/public',
+  cacheDir: '/Users/sarahrichardson/Downloads/premium-coaches-content/node_modules/.vite',
+  command: 'build',
+  mode: 'production',
+  ssr: {
+    target: 'node',
+    optimizeDeps: { noDiscovery: true, esbuildOptions: [Object] }
+  },
+  isWorker: false,
+  mainConfig: null,
+  bundleChain: [],
+  isProduction: true,
+  css: { lightningcss: undefined },
+  server: {
+    preTransformRequests: true,
+    sourcemapIgnoreList: [Function: isInNodeModules$1],
+    middlewareMode: false,
+    fs: {
+      strict: true,
+      allow: [Array],
+      deny: [Array],
+      cachedChecks: undefined
+    }
+  },
+  preview: {
+    port: undefined,
+    strictPort: undefined,
+    host: undefined,
+    allowedHosts: undefined,
+    https: undefined,
+    open: undefined,
+    proxy: undefined,
+    cors: undefined,
+    headers: undefined
+  },
+  envDir: '/Users/sarahrichardson/Downloads/premium-coaches-content',
+  env: { BASE_URL: '/', MODE: 'production', DEV: false, PROD: true },
+  assetsInclude: [Function: assetsInclude],
+  logger: {
+    hasWarned: false,
+    info: [Function: info],
+    warn: [Function: warn],
+    warnOnce: [Function: warnOnce],
+    error: [Function: error],
+    clearScreen: [Function: clearScreen],
+    hasErrorLogged: [Function: hasErrorLogged]
+  },
+  packageCache: Map(1) {
+    'fnpd_/Users/sarahrichardson/Downloads/premium-coaches-content' => {
+      dir: '/Users/sarahrichardson/Downloads/premium-coaches-content',
+      data: [Object],
+      hasSideEffects: [Function: hasSideEffects],
+      webResolvedImports: {},
+      nodeResolvedImports: {},
+      setResolvedCache: [Function: setResolvedCache],
+      getResolvedCache: [Function: getResolvedCache]
+    },
+    set: [Function (anonymous)]
+  },
+  createResolver: [Function: createResolver],
+  optimizeDeps: {
+    holdUntilCrawlEnd: true,
+    esbuildOptions: { preserveSymlinks: false }
+  },
+  worker: { format: 'iife', plugins: '() => plugins', rollupOptions: {} },
+  appType: 'spa',
+  experimental: { importGlobRestoreExtension: false, hmrPartialAccept: false },
+  webSocketToken: 'XPI-r2Pslk-J',
+  additionalAllowedHosts: [],
+  getSortedPlugins: [Function: getSortedPlugins],
+  getSortedPluginHooks: [Function: getSortedPluginHooks]
+}
+vite v5.4.20 building for production...
+transforming...
+✓ 1132 modules transformed.
+x Build failed in 1.12s
+error during build:
+Could not resolve "./workflow/WorkflowTemplates" from "src/components/EmailWorkflowBuilder.tsx"
+file: /Users/sarahrichardson/Downloads/premium-coaches-content/src/components/EmailWorkflowBuilder.tsx
+    at getRollupError (file:///Users/sarahrichardson/Downloads/premium-coaches-content/node_modules/rollup/dist/es/shared/parseAst.js:401:41)
+    at error (file:///Users/sarahrichardson/Downloads/premium-coaches-content/node_modules/rollup/dist/es/shared/parseAst.js:397:42)
+    at ModuleLoader.handleInvalidResolvedId (file:///Users/sarahrichardson/Downloads/premium-coaches-content/node_modules/rollup/dist/es/shared/node-entry.js:21565:24)
+    at file:///Users/sarahrichardson/Downloads/premium-coaches-content/node_modules/rollup/dist/es/shared/node-entry.js:21525:26

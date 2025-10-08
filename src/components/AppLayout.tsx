@@ -16,9 +16,9 @@ import ContentEditor from './ContentEditor';
 import AIPersonalizer from './AIPersonalizer';
 import OnboardingQuiz from './OnboardingQuiz';
 import EmailCampaignBuilder from './EmailCampaignBuilder';
-import { AffiliateDashboard } from './affiliate/AffiliateDashboard';
-//import { SupportDashboard } from './support/SupportDashboard';
-import { SMSDashboard } from './sms/SMSDashboard';
+import AffiliateDashboard from './affiliate/AffiliateDashboard';
+//import SupportDashboard from './support/SupportDashboard';
+import SMSDashboard from './sms/SMSDashboard';
 import { useApp } from '@/contexts/AppContext';
 import { useLocation } from 'react-router-dom';
 

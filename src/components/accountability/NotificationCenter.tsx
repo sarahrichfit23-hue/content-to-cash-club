@@ -1,4 +1,5 @@
 "use client";
+<<<<<<< Updated upstream
 import * as React from "react";
 
 ./fix_missing_components.sh
@@ -20,13 +21,10 @@ grep -rhoE "@/components/[A-Za-z0-9_/]*" src | sed 's/@\/components\///' | sort 
     capname="NotificationCenter"
     cat <<TEMPLATE > "src/components/accountability/NotificationCenter.tsx"
 "use client";
+=======
+>>>>>>> Stashed changes
 import * as React from "react";
 
 export default function NotificationCenter() {
-  return (
-    <div style={{ padding: "1.5rem", border: "1px dashed #aaa", margin: "1rem" }}>
-      <h3>NotificationCenter Placeholder</h3>
-      <p>This component was auto-generated to resolve a missing import.</p>
-    </div>
-  );
+  return <div>NotificationCenter placeholder</div>;
 }
