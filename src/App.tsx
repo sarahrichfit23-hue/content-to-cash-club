@@ -21,8 +21,8 @@ import Dashboard from "./components/Dashboard";
 import OnboardingQuiz from "./components/OnboardingQuiz";
 import BillingPortal from "./components/BillingPortal";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { LandingPageBuilder } from "./components/landing/LandingPageBuilder";
-import { AdminRoute } from "./components/admin/AdminRoute";
+import LandingPageBuilder from "./components/landing/LandingPageBuilder";
+import AdminRoute from "./components/admin/AdminRoute";
 import AdminPanel from "./pages/AdminPanel";
 import AutomationDashboard from "./components/automation/AutomationDashboard";
 
