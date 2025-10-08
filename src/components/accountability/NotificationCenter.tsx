@@ -1,5 +1,5 @@
 "use client";
-import * as React from "react*
+import * as React from "react";
 
 chmod +x fix_missing_components.sh
 
