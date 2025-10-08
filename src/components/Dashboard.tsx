@@ -41,7 +41,7 @@ import DailyChallenge from './DailyChallenge';
 import {WeeklyChallengeProgress } from './WeeklyChallengeProgress';
 import {getTodaysQuote } from '@/data/dailyQuotes';
 
-import { Video, Grid3x3, FileText, Hash, Mail, MessageSquare, Target, Zap, Calendar, Star, Users2, Sparkles, Library, CreditCard, Bell, Activity, AlertTriangle, GitBranch } from 'lucide-react';
+import { Video, Grid3x3, Hash, Target, Calendar, Star, Library, CreditCard, Bell, Activity, AlertTriangle, GitBranch } from 'lucide-react';
 import ContentPackCard from './ContentPackCard';
 import { seedPack } from '@/data/seedData';
 import BillingPortal from './BillingPortal';
