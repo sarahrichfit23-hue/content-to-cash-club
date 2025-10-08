@@ -27,10 +27,20 @@ export async function handleLogout(navigate: any) {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;
 
-    // navigate to signed-out screen
+    // 🧹 NEW: clear stale data to prevent "spinning" on login
+    localStorage.removeItem("supabase.auth.token");
+    localStorage.clear();
+    sessionStorage.removeItem("supabase.auth.token");
+    sessionStorage.removeItem("supabase.auth.refresh_token");
+    // (keep the signedOutMessage intact)
+    sessionStorage.setItem("signedOutMessage", message);
+
+    // redirect to your special page
     navigate("/signed-out");
   } catch (e) {
     console.error("Logout error:", e);
+    // fallback redirect if anything breaks
     window.location.href = "/login";
   }
 }
+
