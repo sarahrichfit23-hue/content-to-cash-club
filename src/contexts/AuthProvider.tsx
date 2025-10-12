@@ -1,99 +1,78 @@
 // src/contexts/AuthProvider.tsx
-import { createContext, useContext, useEffect, useState, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/lib/supabase";
+import React, { createContext, useContext, useEffect, useState } from 'react'
+import { supabase } from '@/lib/supabase'
+import { useNavigate } from 'react-router-dom'
 
-interface AuthContextType {
-  session: any;
-  loading: boolean;
-  signOut: () => Promise<void>;
+type AuthContextType = {
+  session: any
+  user: any
+  loading: boolean
+  signOut: () => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) throw new Error("useAuth must be used within an AuthProvider");
-  return context;
-};
+const AuthContext = createContext<AuthContextType>({
+  session: null,
+  user: null,
+  loading: true,
+  signOut: async () => {},
+})
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const didRedirect = useRef(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  const handleRedirect = (path: string) => {
-    if (didRedirect.current) return;
-    didRedirect.current = true;
-    navigate(path, { replace: true });
-    setTimeout(() => (didRedirect.current = false), 500);
-  };
+  const [session, setSession] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   useEffect(() => {
-    const initAuth = async () => {
-      const { data } = await supabase.auth.getSession();
+    // ✅ Restore session
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setLoading(false)
+    })
 
-      // If session expired or missing, log out safely
-      if (!data.session) {
-        await supabase.auth.signOut();
-        setSession(null);
-        setLoading(false);
-        if (location.pathname.startsWith("/dashboard")) handleRedirect("/");
-        return;
-      }
-
-      setSession(data.session);
-      setLoading(false);
-
-      // Already logged in but on login/signup → go dashboard
-      if (
-        ["/login", "/signup", "/reset-password"].includes(location.pathname)
-      ) {
-        handleRedirect("/dashboard");
-      }
-    };
-
-    initAuth();
-
+    // ✅ Listen for login/logout events
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
-        setSession(session);
-        setLoading(false);
+      async (event, session) => {
+        console.log('🔐 Auth event:', event)
+        setSession(session)
 
-        if (session) {
-          // Login → dashboard
-          if (
-            ["/login", "/signup", "/reset-password", "/"].includes(
-              location.pathname
-            )
-          ) {
-            handleRedirect("/dashboard");
-          }
-        } else {
-          // Logout → landing
-          handleRedirect("/");
+        if (event === 'SIGNED_IN') {
+          console.log('✅ User signed in')
+          navigate('/dashboard', { replace: true })
+        }
+
+        if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out')
+          navigate('/', { replace: true })
         }
       }
-    );
+    )
 
     return () => {
-      listener.subscription.unsubscribe();
-    };
-  }, [navigate, location.pathname]);
+      listener.subscription.unsubscribe()
+    }
+  }, [navigate])
 
   const signOut = async () => {
-    await supabase.auth.signOut();
-    setSession(null);
-    handleRedirect("/");
-  };
+    await supabase.auth.signOut()
+    setSession(null)
+    navigate('/', { replace: true })
+  }
+
+  const value = {
+    session,
+    user: session?.user || null,
+    loading,
+    signOut,
+  }
 
   return (
-    <AuthContext.Provider value={{ session, loading, signOut }}>
-      {children}
+    <AuthContext.Provider value={value}>
+      {!loading && children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
+
+export const useAuth = () => useContext(AuthContext)
+
 
 

@@ -1,3 +1,4 @@
+// src/lib/supabase.ts
 import { createClient } from '@supabase/supabase-js'
 
 // ✅ Load env vars
@@ -17,7 +18,6 @@ const safeStorage = {
     try {
       window.localStorage.setItem(key, value)
     } catch {
-      // Safari private mode or storage blocked
       console.warn('⚠️ localStorage not available, falling back to memory.')
     }
   },
@@ -28,13 +28,13 @@ const safeStorage = {
   },
 }
 
-// ✅ Create Supabase client with Safari-safe persistence
+// ✅ Create Supabase client
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storage: safeStorage, // ⬅️ our fix
+    storage: safeStorage,
   },
   realtime: {
     params: {
@@ -43,7 +43,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   },
 })
 
-// ✅ Session diagnostics
+// ✅ Log status for debugging
 supabase.auth.getSession().then(({ data, error }) => {
   if (error) {
     console.error('❌ Supabase connection error:', error.message)
@@ -53,12 +53,12 @@ supabase.auth.getSession().then(({ data, error }) => {
   }
 })
 
-// ✅ Handle Safari token issues on reload
+// ✅ Listen for auth state changes
 supabase.auth.onAuthStateChange((event, session) => {
+  console.log('🔐 Auth event:', event)
   if (event === 'TOKEN_REFRESHED') console.log('🔄 Token refreshed')
   if (event === 'SIGNED_OUT') console.log('👋 User signed out')
 
-  // Safari fix: re-save session manually if missing
   if (session) {
     try {
       safeStorage.setItem('supabase.auth.token', JSON.stringify(session))
@@ -67,4 +67,3 @@ supabase.auth.onAuthStateChange((event, session) => {
     }
   }
 })
-
