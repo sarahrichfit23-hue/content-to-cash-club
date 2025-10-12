@@ -6,6 +6,7 @@ import { supabase } from "@/lib/supabase";
 interface AuthContextType {
   session: any;
   loading: boolean;
+  signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -23,49 +24,76 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  const handleRedirect = (path: string) => {
+    if (didRedirect.current) return;
+    didRedirect.current = true;
+    navigate(path, { replace: true });
+    setTimeout(() => (didRedirect.current = false), 500);
+  };
+
   useEffect(() => {
     const initAuth = async () => {
       const { data } = await supabase.auth.getSession();
+
+      // If session expired or missing, log out safely
+      if (!data.session) {
+        await supabase.auth.signOut();
+        setSession(null);
+        setLoading(false);
+        if (location.pathname.startsWith("/dashboard")) handleRedirect("/");
+        return;
+      }
+
       setSession(data.session);
       setLoading(false);
+
+      // Already logged in but on login/signup → go dashboard
+      if (
+        ["/login", "/signup", "/reset-password"].includes(location.pathname)
+      ) {
+        handleRedirect("/dashboard");
+      }
     };
 
     initAuth();
 
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setLoading(false);
+    const { data: listener } = supabase.auth.onAuthStateChange(
+      async (_event, session) => {
+        setSession(session);
+        setLoading(false);
 
-      if (didRedirect.current) return; // ✅ Prevent duplicate navigation
-      didRedirect.current = true;
-
-      if (session) {
-        // User logged in
-        if (location.pathname === "/login" || location.pathname === "/") {
-          navigate("/dashboard", { replace: true });
-        }
-      } else {
-        // User logged out
-        if (!["/login", "/signup", "/reset-password"].includes(location.pathname)) {
-          navigate("/login", { replace: true });
+        if (session) {
+          // Login → dashboard
+          if (
+            ["/login", "/signup", "/reset-password", "/"].includes(
+              location.pathname
+            )
+          ) {
+            handleRedirect("/dashboard");
+          }
+        } else {
+          // Logout → landing
+          handleRedirect("/");
         }
       }
-
-      // Reset guard after short delay to allow future logins/logouts
-      setTimeout(() => {
-        didRedirect.current = false;
-      }, 1000);
-    });
+    );
 
     return () => {
       listener.subscription.unsubscribe();
     };
   }, [navigate, location.pathname]);
 
+  const signOut = async () => {
+    await supabase.auth.signOut();
+    setSession(null);
+    handleRedirect("/");
+  };
+
   return (
-    <AuthContext.Provider value={{ session, loading }}>
+    <AuthContext.Provider value={{ session, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
 
