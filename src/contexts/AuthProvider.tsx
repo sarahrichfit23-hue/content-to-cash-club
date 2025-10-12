@@ -1,11 +1,11 @@
 // src/contexts/AuthProvider.tsx
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { supabase } from "@/lib/supabase"; // adjust path if needed
+import { supabase } from "@/lib/supabase";
 
 interface AuthContextType {
   session: any;
-  supabase: typeof supabase;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,25 +19,42 @@ export const useAuth = () => {
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [session, setSession] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const didRedirect = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    // Load current session
-    supabase.auth.getSession().then(({ data }) => {
+    const initAuth = async () => {
+      const { data } = await supabase.auth.getSession();
       setSession(data.session);
       setLoading(false);
-    });
+    };
 
-    // Watch for login/logout
+    initAuth();
+
     const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setLoading(false);
 
-      // ✅ Only navigate if the user just logged in and isn't already on dashboard
-      if (session && location.pathname === "/login") {
-        navigate("/dashboard", { replace: true });
+      if (didRedirect.current) return; // ✅ Prevent duplicate navigation
+      didRedirect.current = true;
+
+      if (session) {
+        // User logged in
+        if (location.pathname === "/login" || location.pathname === "/") {
+          navigate("/dashboard", { replace: true });
+        }
+      } else {
+        // User logged out
+        if (!["/login", "/signup", "/reset-password"].includes(location.pathname)) {
+          navigate("/login", { replace: true });
+        }
       }
+
+      // Reset guard after short delay to allow future logins/logouts
+      setTimeout(() => {
+        didRedirect.current = false;
+      }, 1000);
     });
 
     return () => {
@@ -45,11 +62,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
   }, [navigate, location.pathname]);
 
-  if (loading) return <div className="text-center p-6">Loading...</div>;
-
   return (
-    <AuthContext.Provider value={{ session, supabase }}>
+    <AuthContext.Provider value={{ session, loading }}>
       {children}
     </AuthContext.Provider>
   );
 };
+
