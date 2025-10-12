@@ -38,7 +38,7 @@ import BrandDNAWizard from './brand/BrandDNAWizard';
 import BrandDNAPDFExport from './brand/BrandDNAPDFExport';
 
 import DailyChallenge from './DailyChallenge';
-import {WeeklyChallengeProgress } from './WeeklyChallengeProgress';
+import WeeklyChallengeProgress from './WeeklyChallengeProgress';
 import {getTodaysQuote } from '@/data/dailyQuotes';
 
 import { Video, Grid3x3, Hash, Target, Calendar, Star, Library, CreditCard, Bell, Activity, AlertTriangle, GitBranch } from 'lucide-react';
@@ -210,7 +210,11 @@ const Dashboard: React.FC = () => {
               <CreditCard className="w-4 h-4" />
               Billing
             </TabsTrigger>
-          </TabsList>
+<TabsTrigger value="clientacquisition" className="flex items-center gap-2">
+  <Target className="w-4 h-4" />
+  Client Acquisition
+</TabsTrigger>
+</TabsList>              
 
 
           {/* Overview Tab Content - Main Dashboard Home */}
@@ -355,6 +359,18 @@ const Dashboard: React.FC = () => {
                 </Card>
               </div>
             </div>
+<Card
+  className="hover:shadow-lg transition-shadow cursor-pointer"
+  onClick={() => setActiveTab('clientacquisition')}
+>
+  <CardHeader>
+    <Target className="w-8 h-8 text-yellow-600 mb-2" />
+    <CardTitle className="text-base">Client Acquisition</CardTitle>
+    <CardDescription className="text-sm">
+      Track leads, outreach, and daily actions
+    </CardDescription>
+  </CardHeader>
+</Card>
 
 
             {/* Monthly Challenge Banner */}
@@ -577,6 +593,15 @@ const Dashboard: React.FC = () => {
           <TabsContent value="accountability">
             <DailyChallenge />
           </TabsContent>
+<TabsContent value="clientacquisition">
+  <div className="p-6">
+    <iframe
+      src="/dashboard/client-acquisition"
+      className="w-full h-[80vh] border rounded-md"
+      title="Client Acquisition Dashboard"
+    />
+  </div>
+</TabsContent>
 
         </Tabs>
         </div>

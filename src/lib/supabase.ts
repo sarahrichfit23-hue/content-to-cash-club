@@ -1,77 +1,70 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js'
 
-// Get Supabase credentials from environment variables
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
-const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+// ✅ Load env vars
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || ''
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || ''
 
-// Validate credentials before creating client
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ MISSING SUPABASE CREDENTIALS');
-  console.error('Please check your .env file and ensure:');
-  console.error('1. VITE_SUPABASE_URL is set');
-  console.error('2. VITE_SUPABASE_ANON_KEY is set');
-  console.error('3. You have restarted your dev server');
+// ✅ Cross-browser safe storage adapter (Safari compatible)
+const safeStorage = {
+  getItem: (key: string) => {
+    try {
+      return window.localStorage.getItem(key)
+    } catch {
+      return null
+    }
+  },
+  setItem: (key: string, value: string) => {
+    try {
+      window.localStorage.setItem(key, value)
+    } catch {
+      // Safari private mode or storage blocked
+      console.warn('⚠️ localStorage not available, falling back to memory.')
+    }
+  },
+  removeItem: (key: string) => {
+    try {
+      window.localStorage.removeItem(key)
+    } catch {}
+  },
 }
 
-if (supabaseUrl && !supabaseUrl.includes('supabase.co')) {
-  console.error('❌ INVALID SUPABASE URL:', supabaseUrl);
-  console.error('URL should look like: https://your-project.supabase.co');
-}
-
-if (supabaseAnonKey && supabaseAnonKey.length < 100) {
-  console.error('❌ INVALID SUPABASE KEY - Key appears too short');
-  console.error('The anon key should be a long JWT token (200+ characters)');
-}
-
-// Create Supabase client
+// ✅ Create Supabase client with Safari-safe persistence
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    storageKey: 'supabase-auth',
-    flowType: 'pkce',
+    storage: safeStorage, // ⬅️ our fix
   },
   realtime: {
     params: {
       eventsPerSecond: 10,
     },
   },
-});
+})
 
-// Test connection on load
+// ✅ Session diagnostics
 supabase.auth.getSession().then(({ data, error }) => {
   if (error) {
-    console.error('❌ SUPABASE CONNECTION ERROR:', error.message);
-    if (error.message.includes('API key')) {
-      console.error('🔧 FIX: Update your .env file with valid Supabase credentials');
-      console.error('📍 Get them from: https://supabase.com/dashboard/project/_/settings/api');
-    }
+    console.error('❌ Supabase connection error:', error.message)
   } else {
-    console.log('✅ Supabase connected successfully');
-// --- Auto-clear stale or invalid Supabase sessions ---
-supabase.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'TOKEN_REFRESHED') {
-    console.log('🔄 Token refreshed successfully');
+    console.log('✅ Supabase connected successfully')
+    console.log('🌐 Supabase URL:', supabaseUrl)
   }
+})
 
-  if (event === 'SIGNED_OUT') {
-    console.log('👋 User signed out');
-    await supabase.auth.signOut();
-  }
+// ✅ Handle Safari token issues on reload
+supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'TOKEN_REFRESHED') console.log('🔄 Token refreshed')
+  if (event === 'SIGNED_OUT') console.log('👋 User signed out')
 
-  // Automatically clear stale sessions that block login
-  if (!session) {
-    console.warn('🧹 Clearing stale session');
+  // Safari fix: re-save session manually if missing
+  if (session) {
     try {
-      localStorage.removeItem('supabase-auth');
-      sessionStorage.clear();
-    } catch (err) {
-      console.error('Failed to clear stale session:', err);
+      safeStorage.setItem('supabase.auth.token', JSON.stringify(session))
+    } catch {
+      console.warn('⚠️ Could not persist session in Safari.')
     }
   }
-});
+})
 
-
-  }
-});

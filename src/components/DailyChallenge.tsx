@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, Circle, Trophy, Users } from 'lucide-react';
+import { CheckCircle2, Circle, Trophy } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
 import { useToast } from '@/hooks/use-toast';
 import StreakTracker from './accountability/StreakTracker';
@@ -12,36 +11,17 @@ import LeaderboardSettings from './accountability/LeaderboardSettings';
 import NotificationCenter from './accountability/NotificationCenter';
 import { AVAILABLE_BADGES } from '@/data/badges';
 
-
-
 const DAILY_CHALLENGES = [
-  { 
-    id: 'content', 
+  {
+    id: 'content',
     text: 'Post content (choose one: Carousel, Reel, or Static Image)',
-    options: ['Carousel', 'Reel', 'Static Image']
+    options: ['Carousel', 'Reel', 'Static Image'],
   },
-  { 
-    id: 'comments', 
-    text: 'Comment on at least 10 ideal client\'s posts',
-    options: []
-  },
-  { 
-    id: 'dm_followers', 
-    text: 'DM anyone who has followed you today',
-    options: []
-  },
-  { 
-    id: 'engage_niche', 
-    text: 'Engage with 5 accounts in your niche',
-    options: []
-  },
-  { 
-    id: 'story_cta', 
-    text: 'Share a story with a CTA',
-    options: []
-  }
+  { id: 'comments', text: "Comment on at least 10 ideal client's posts", options: [] },
+  { id: 'dm_followers', text: 'DM anyone who has followed you today', options: [] },
+  { id: 'engage_niche', text: 'Engage with 5 accounts in your niche', options: [] },
+  { id: 'story_cta', text: 'Share a story with a CTA', options: [] },
 ];
-
 
 const DailyChallenge: React.FC = () => {
   const [completedChallenges, setCompletedChallenges] = useState<string[]>([]);
@@ -49,78 +29,101 @@ const DailyChallenge: React.FC = () => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const { toast } = useToast();
 
-
+  // 🧠 Load user accountability data
   useEffect(() => {
     loadAccountabilityData();
   }, []);
 
   const loadAccountabilityData = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
-    
+
     setCurrentUserId(user.id);
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('user_accountability')
       .select('*')
       .eq('user_id', user.id)
-      .single();
+      .maybeSingle(); // ✅ safer than .single()
+
+    if (error) {
+      console.warn('⚠️ Error loading user_accountability:', error.message);
+    }
 
     if (data) {
       setAccountability(data);
     }
   };
 
-
+  // ✅ Toggle challenge + save to daily_checkins
   const toggleChallenge = async (challenge: string) => {
     const updated = completedChallenges.includes(challenge)
-      ? completedChallenges.filter(c => c !== challenge)
+      ? completedChallenges.filter((c) => c !== challenge)
       : [...completedChallenges, challenge];
-    
+
     setCompletedChallenges(updated);
 
-    // Save to database
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from('daily_checkins').upsert({
-        user_id: user.id,
-        checkin_date: new Date().toISOString().split('T')[0],
-        challenges_completed: updated
-      });
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) return;
 
-      // Notify buddies if all challenges completed
-      if (updated.length === DAILY_CHALLENGES.length) {
-        await notifyBuddies(user.id, 'challenge_complete', 'Your buddy completed all daily challenges! 🎉');
-      }
+    const today = new Date().toISOString().split('T')[0];
 
-      toast({
-        title: 'Progress Saved!',
-        description: `${updated.length} challenges completed today`
-      });
+const { data, error } = await supabase
+  .from('daily_checkins')
+  .upsert({
+    user_id: user.id,
+    checkin_date: today,
+    challenges_completed: updated,
+  })
+  .select(); // ✅ this alone handles return cleanly — no 406 risk
+
+if (error) {
+  console.error('❌ daily_checkins upsert error:', error.message);
+} else {
+  console.log('✅ daily_checkins updated:', data);
+}
+
+    // Notify buddies if all challenges completed
+    if (updated.length === DAILY_CHALLENGES.length) {
+      await notifyBuddies(user.id, 'challenge_complete', 'Your buddy completed all daily challenges! 🎉');
     }
+
+    toast({
+      title: 'Progress Saved!',
+      description: `${updated.length} challenges completed today`,
+    });
   };
 
+  // 📨 Notify accepted accountability buddies
   const notifyBuddies = async (userId: string, type: string, message: string) => {
-    const { data: buddies } = await supabase
+    const { data: buddies, error } = await supabase
       .from('accountability_buddies')
       .select('user_id, buddy_id')
       .or(`user_id.eq.${userId},buddy_id.eq.${userId}`)
       .eq('status', 'accepted');
 
+    if (error) {
+      console.error('⚠️ Error loading buddies:', error.message);
+      return;
+    }
+
     if (buddies) {
       for (const buddy of buddies) {
         const buddyId = buddy.user_id === userId ? buddy.buddy_id : buddy.user_id;
         await supabase.functions.invoke('send-buddy-notification', {
-          body: { buddyId, type, message }
+          body: { buddyId, type, message },
         });
       }
     }
   };
 
-
-  const badges = AVAILABLE_BADGES.map(badge => ({
+  const badges = AVAILABLE_BADGES.map((badge) => ({
     ...badge,
-    earned: accountability?.badges_earned?.includes(badge.id) || false
+    earned: accountability?.badges_earned?.includes(badge.id) || false,
   }));
 
   return (
@@ -128,7 +131,6 @@ const DailyChallenge: React.FC = () => {
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-2xl font-bold">Daily Accountability</h2>
         <NotificationCenter />
-
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -155,21 +157,21 @@ const DailyChallenge: React.FC = () => {
           <h3 className="text-xl font-bold mb-4">Leaderboard Settings</h3>
           <LeaderboardSettings />
         </Card>
-
       </div>
-
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-xl font-bold">Today's Challenges</h3>
           <div className="flex items-center gap-2">
             <Trophy className="w-5 h-5 text-yellow-600" />
-            <span className="font-bold">{completedChallenges.length}/{DAILY_CHALLENGES.length}</span>
+            <span className="font-bold">
+              {completedChallenges.length}/{DAILY_CHALLENGES.length}
+            </span>
           </div>
         </div>
 
         <div className="space-y-3">
-          {DAILY_CHALLENGES.map((challenge, index) => (
+          {DAILY_CHALLENGES.map((challenge) => (
             <button
               key={challenge.id}
               onClick={() => toggleChallenge(challenge.id)}
@@ -180,7 +182,13 @@ const DailyChallenge: React.FC = () => {
               ) : (
                 <Circle className="w-6 h-6 text-gray-300 flex-shrink-0" />
               )}
-              <span className={completedChallenges.includes(challenge.id) ? 'line-through text-gray-500' : ''}>
+              <span
+                className={
+                  completedChallenges.includes(challenge.id)
+                    ? 'line-through text-gray-500'
+                    : ''
+                }
+              >
                 {challenge.text}
               </span>
             </button>
@@ -192,3 +200,4 @@ const DailyChallenge: React.FC = () => {
 };
 
 export default DailyChallenge;
+

@@ -45,19 +45,20 @@ export function useSubscription(userId: string | null) {
 
     const fetchSubscription = async () => {
       try {
+        // ✅ safer query: prevents 406 errors when no record exists
         const { data: subData, error: subError } = await supabase
           .from('subscriptions')
           .select('*')
           .eq('user_id', userId)
-          .single();
+          .maybeSingle();
 
         if (subError && subError.code !== 'PGRST116') {
           throw subError;
         }
 
-        setSubscription(subData);
+        setSubscription(subData || null);
 
-        // Fetch invoices
+        // ✅ fetch invoices safely with explicit select
         const { data: invoiceData, error: invoiceError } = await supabase
           .from('invoices')
           .select('*')
@@ -70,6 +71,7 @@ export function useSubscription(userId: string | null) {
 
         setInvoices(invoiceData || []);
       } catch (err: any) {
+        console.error('⚠️ Supabase subscription fetch error:', err.message);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -78,10 +80,11 @@ export function useSubscription(userId: string | null) {
 
     fetchSubscription();
 
-    // Subscribe to changes
-    const subscription = supabase
+    // ✅ Real-time listener for updates
+    const channel = supabase
       .channel(`subscription_${userId}`)
-      .on('postgres_changes', 
+      .on(
+        'postgres_changes',
         { event: '*', schema: 'public', table: 'subscriptions', filter: `user_id=eq.${userId}` },
         (payload) => {
           if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
@@ -92,10 +95,11 @@ export function useSubscription(userId: string | null) {
       .subscribe();
 
     return () => {
-      subscription.unsubscribe();
+      supabase.removeChannel(channel);
     };
   }, [userId]);
 
+  // ✅ Stripe helper functions remain unchanged
   const createCheckoutSession = async (tier: 'starter' | 'pro' | 'elite', email: string) => {
     try {
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
@@ -104,10 +108,9 @@ export function useSubscription(userId: string | null) {
           userId,
           tier,
           email,
-          customerId: subscription?.stripe_customer_id
-        }
+          customerId: subscription?.stripe_customer_id,
+        },
       });
-
       if (error) throw error;
       return data;
     } catch (err: any) {
@@ -119,12 +122,8 @@ export function useSubscription(userId: string | null) {
   const createPortalSession = async () => {
     try {
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
-        body: {
-          action: 'create-portal-session',
-          userId
-        }
+        body: { action: 'create-portal-session', userId },
       });
-
       if (error) throw error;
       return data;
     } catch (err: any) {
@@ -137,16 +136,14 @@ export function useSubscription(userId: string | null) {
     if (!subscription?.stripe_subscription_id) {
       throw new Error('No active subscription');
     }
-
     try {
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: {
           action: 'update-subscription',
           subscriptionId: subscription.stripe_subscription_id,
-          newTier
-        }
+          newTier,
+        },
       });
-
       if (error) throw error;
       return data;
     } catch (err: any) {
@@ -159,15 +156,13 @@ export function useSubscription(userId: string | null) {
     if (!subscription?.stripe_subscription_id) {
       throw new Error('No active subscription');
     }
-
     try {
       const { data, error } = await supabase.functions.invoke('stripe-checkout', {
         body: {
           action: 'cancel-subscription',
-          subscriptionId: subscription.stripe_subscription_id
-        }
+          subscriptionId: subscription.stripe_subscription_id,
+        },
       });
-
       if (error) throw error;
       return data;
     } catch (err: any) {
@@ -182,9 +177,11 @@ export function useSubscription(userId: string | null) {
   };
 
   const hasActiveSubscription = () => {
-    return subscription?.status === 'active' || 
-           subscription?.status === 'trialing' ||
-           (subscription?.status === 'past_due' && isInGracePeriod());
+    return (
+      subscription?.status === 'active' ||
+      subscription?.status === 'trialing' ||
+      (subscription?.status === 'past_due' && isInGracePeriod())
+    );
   };
 
   return {
@@ -197,6 +194,7 @@ export function useSubscription(userId: string | null) {
     updateSubscription,
     cancelSubscription,
     isInGracePeriod,
-    hasActiveSubscription
+    hasActiveSubscription,
   };
 }
+

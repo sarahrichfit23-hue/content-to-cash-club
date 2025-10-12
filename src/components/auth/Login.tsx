@@ -37,32 +37,34 @@ const handleLogin = async (e: React.FormEvent) => {
       return;
     }
 
-    const { data: sessionData } = await supabase.auth.getSession();
+const { data: sessionData } = await supabase.auth.getSession();
 
-    if (sessionData.session) {
-      toast({
-        title: "Welcome back!",
-        description: "You’ve logged in successfully.",
-      });
-      navigate("/dashboard");
-    } else {
-      console.warn("No active session found after login attempt");
-      toast({
-        title: "Login issue",
-        description: "Please try logging in again.",
-        variant: "destructive",
-      });
-    }
-  } catch (err) {
-    console.error("Unexpected login error:", err);
-    toast({
-      title: "Unexpected error",
-      description: String(err),
-      variant: "destructive",
-    });
-  } finally {
-    setLoading(false);
-  }
+if (sessionData.session) {
+  toast({
+    title: "Welcome back!",
+    description: "You’ve logged in successfully.",
+  });
+
+// 👇 Replace history so back button won't go to /login
+navigate("/dashboard", { replace: true });
+} else {
+  console.warn("No active session found after login attempt");
+  toast({
+    title: "Login issue",
+    description: "Please try logging in again.",
+    variant: "destructive",
+  });
+}
+} catch (err) {
+  console.error("Unexpected login error:", err);
+  toast({
+    title: "Unexpected error",
+    description: String(err),
+    variant: "destructive",
+  });
+} finally {
+  setLoading(false);
+}
 };
 
   return (

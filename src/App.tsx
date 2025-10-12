@@ -1,10 +1,14 @@
+// src/App.tsx
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { ThemeProvider } from "@/components/theme-provider";
 import { AppProvider } from "@/contexts/AppContext";
 import { ErrorBoundary } from "@/components/system/ErrorBoundary";
+import { useAuth } from "./contexts/AuthProvider"; // ✅ Supabase session handling
+
+// Public pages
 import Home from "./pages/Home";
 import NotFound from "./pages/NotFound";
 import SignedOut from "./pages/SignedOut";
@@ -25,35 +29,52 @@ import LandingPageBuilder from "./components/landing/LandingPageBuilder";
 import AdminRoute from "./components/admin/AdminRoute";
 import AdminPanel from "./pages/AdminPanel";
 import AutomationDashboard from "./components/automation/AutomationDashboard";
+import ClientAcquisitionDashboard from "./pages/dashboard/ClientAcquisitionDashboard";
 
 const queryClient = new QueryClient();
 
-const App = () => (
-  <ThemeProvider defaultTheme="light">
-    <QueryClientProvider client={queryClient}>
-      <AppProvider>
-        <TooltipProvider>
-          <Toaster />
-          <BrowserRouter>
+const App = () => {
+  // ✅ Get session + loading from AuthProvider
+  const { session, loading } = useAuth();
+
+  // ⏳ Prevent routing until Supabase finishes restoring session
+  if (loading) return <div className="p-6 text-center">Loading session...</div>;
+
+  return (
+    <ThemeProvider defaultTheme="light" storageKey="vite-ui-theme">
+      <QueryClientProvider client={queryClient}>
+        <AppProvider>
+          <TooltipProvider>
+            <Toaster />
             <Routes>
-              {/* Public routes */}
+              {/* ---------- Public Routes ---------- */}
               <Route path="/" element={<Home />} />
               <Route path="/signup" element={<SignUp />} />
               <Route path="/login" element={<Login />} />
               <Route path="/reset-password" element={<ResetPassword />} />
               <Route path="/signed-out" element={<SignedOut />} />
 
-              {/* Auth callback routes */}
+              {/* ---------- Auth Callback Routes ---------- */}
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/auth/update-password" element={<UpdatePassword />} />
 
-              {/* Protected routes */}
+              {/* ---------- Protected Routes ---------- */}
               <Route
                 path="/dashboard"
                 element={
                   <ErrorBoundary>
                     <ProtectedRoute requireOnboarding>
                       <Dashboard />
+                    </ProtectedRoute>
+                  </ErrorBoundary>
+                }
+              />
+              <Route
+                path="/dashboard/client-acquisition"
+                element={
+                  <ErrorBoundary>
+                    <ProtectedRoute requireOnboarding>
+                      <ClientAcquisitionDashboard />
                     </ProtectedRoute>
                   </ErrorBoundary>
                 }
@@ -98,7 +119,8 @@ const App = () => (
                   </ErrorBoundary>
                 }
               />
-              {/* Admin route */}
+
+              {/* ---------- Admin Route ---------- */}
               <Route
                 path="/admin"
                 element={
@@ -109,14 +131,16 @@ const App = () => (
                   </ErrorBoundary>
                 }
               />
-              {/* 404 */}
+
+              {/* ---------- 404 Route ---------- */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AppProvider>
-    </QueryClientProvider>
-  </ThemeProvider>
-);
+          </TooltipProvider>
+        </AppProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
+  );
+};
 
 export default App;
+
