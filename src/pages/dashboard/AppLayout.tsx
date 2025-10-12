@@ -1,24 +1,24 @@
 import { useState } from 'react';
-import Hero from './Hero';
-import PainSection from './PainSection';
-import Features from './Features';
-import Pricing from './Pricing';
-import Testimonials from './Testimonials';
-import Footer from './Footer';
-import Navigation from './Navigation';
-import StorySection from './StorySection';
-import FinalCTA from './FinalCTA';
+import Hero from '../../components/Hero';
+import PainSection from '../../components/PainSection';
+import Features from '../../components/Features';
+import Pricing from '../../components/Pricing';
+import Testimonials from '../../components/Testimonials';
+import Footer from '../../components/Footer';
+import Navigation from '../../components/Navigation';
+import StorySection from '../../components/StorySection';
+import FinalCTA from '../../components/FinalCTA';
 
 
 
-import Dashboard from './Dashboard';
-import ContentEditor from './ContentEditor';
-import AIPersonalizer from './AIPersonalizer';
-import OnboardingQuiz from './OnboardingQuiz';
-import EmailCampaignBuilder from './EmailCampaignBuilder';
-import AffiliateDashboard from './affiliate/AffiliateDashboard';
+import Dashboard from '../../components/Dashboard';
+import ContentEditor from '../../components/ContentEditor';
+import AIPersonalizer from '../../components/AIPersonalizer';
+import OnboardingQuiz from '../../components/OnboardingQuiz';
+import EmailCampaignBuilder from '../../components/EmailCampaignBuilder';
+import AffiliateDashboard from '../../components/affiliate/AffiliateDashboard';
 //import SupportDashboard from './support/SupportDashboard';
-import SMSDashboard from './sms/SMSDashboard';
+import SMSDashboard from '../../components/sms/SMSDashboard';
 import { useApp } from '@/contexts/AppContext';
 import { useLocation } from 'react-router-dom';
 
