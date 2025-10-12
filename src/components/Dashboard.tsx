@@ -48,6 +48,7 @@ import BillingPortal from './BillingPortal';
 import PaymentUpdateModal from './PaymentUpdateModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import MonthlyContentPack from './MonthlyContentPack';
+import ClientAcquisitionDashboard from '@/pages/dashboard/ClientAcquisitionDashboard'
 
 
 const Dashboard: React.FC = () => {
@@ -594,13 +595,7 @@ const Dashboard: React.FC = () => {
             <DailyChallenge />
           </TabsContent>
 <TabsContent value="clientacquisition">
-  <div className="p-6">
-    <iframe
-      src="/dashboard/client-acquisition"
-      className="w-full h-[80vh] border rounded-md"
-      title="Client Acquisition Dashboard"
-    />
-  </div>
+  <ClientAcquisitionDashboard />
 </TabsContent>
 
         </Tabs>
