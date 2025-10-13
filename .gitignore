@@ -1,0 +1,8 @@
+# Ignore environment secrets
+.env
+
+# Node dependencies
+node_modules/
+
+# Build output
+dist/
