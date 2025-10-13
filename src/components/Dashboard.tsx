@@ -12,10 +12,11 @@ import {
 } from 'lucide-react';
 
 import ContentLibrary from './ContentLibrary';
+import ContentStrategyEngine from './ContentStrategyEngine';
 import { AIContentGenerator } from './AIContentGenerator';
 import AnalyticsDashboard from './AnalyticsDashboard';
 import WhiteLabelDashboard from './whitelabel/WhiteLabelDashboard';
-import APIUsageDashboard from './api/APIUsageDashboard';
+import APIUsageDashboard from './APIUsageDashboard';
 import CommunityHub from './CommunityHub';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navigation from './Navigation';
@@ -132,7 +133,7 @@ const Dashboard: React.FC = () => {
               AI Generator
             </TabsTrigger>
             <TabsTrigger value="branddna" className="flex items-center gap-2">
-              <Brain className="w-4 h-4" />
+            <Brain className="w-4 h-4" />
               Brand DNA
             </TabsTrigger>
             <TabsTrigger value="analytics" className="flex items-center gap-2">
@@ -215,8 +216,12 @@ const Dashboard: React.FC = () => {
   <Target className="w-4 h-4" />
   Client Acquisition
 </TabsTrigger>
-</TabsList>              
+<TabsTrigger value="strategy" className="flex items-center gap-2">
+  <Brain className="w-4 h-4" />
+  Content Strategy
+</TabsTrigger>
 
+</TabsList>  
 
           {/* Overview Tab Content - Main Dashboard Home */}
           <TabsContent value="overview">
@@ -508,6 +513,10 @@ const Dashboard: React.FC = () => {
             <ContentLibrary />
           </TabsContent>
 
+          <TabsContent value="strategy">
+           <ContentStrategyEngine />
+          </TabsContent>
+
           <TabsContent value="ai">
             <AIContentGenerator />
           </TabsContent>
@@ -590,10 +599,10 @@ const Dashboard: React.FC = () => {
             </div>
           </TabsContent>
 
-          
-          <TabsContent value="accountability">
+           <TabsContent value="accountability">
             <DailyChallenge />
           </TabsContent>
+
 <TabsContent value="clientacquisition">
   <ClientAcquisitionDashboard />
 </TabsContent>

@@ -17,6 +17,7 @@ import AIPersonalizer from '../../components/AIPersonalizer';
 import OnboardingQuiz from '../../components/OnboardingQuiz';
 import EmailCampaignBuilder from '../../components/EmailCampaignBuilder';
 import AffiliateDashboard from '../../components/affiliate/AffiliateDashboard';
+import ContentStrategyEngine from '../dashboard/ContentStrategy';
 //import SupportDashboard from './support/SupportDashboard';
 import SMSDashboard from '../../components/sms/SMSDashboard';
 import { useApp } from '@/contexts/AppContext';
@@ -52,6 +53,10 @@ export default function AppLayout() {
     return <SMSDashboard />;
   }
   
+  if (location.pathname === '/content-strategy') {
+  return <ContentStrategyEngine />;
+}
+
   // Show onboarding if needed
   if (showOnboarding && !user) {
     return <OnboardingQuiz onComplete={() => setShowOnboarding(false)} />;

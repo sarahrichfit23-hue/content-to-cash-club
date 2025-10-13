@@ -45,96 +45,86 @@ const App = () => {
       <QueryClientProvider client={queryClient}>
         <AppProvider>
           <TooltipProvider>
+            {/* ✅ Global Toaster for brand DNA success notifications */}
             <Toaster />
-            <Routes>
-              {/* ---------- Public Routes ---------- */}
-              <Route path="/" element={<Home />} />
-              <Route path="/signup" element={<SignUp />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/signed-out" element={<SignedOut />} />
 
-              {/* ---------- Auth Callback Routes ---------- */}
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/auth/update-password" element={<UpdatePassword />} />
+            <ErrorBoundary>
+              <Routes>
+                {/* ---------- Public Routes ---------- */}
+                <Route path="/" element={<Home />} />
+                <Route path="/signup" element={<SignUp />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/signed-out" element={<SignedOut />} />
 
-              {/* ---------- Protected Routes ---------- */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ErrorBoundary>
+                {/* ---------- Auth Callback Routes ---------- */}
+                <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route path="/auth/update-password" element={<UpdatePassword />} />
+
+                {/* ---------- Protected Routes ---------- */}
+                <Route
+                  path="/dashboard"
+                  element={
                     <ProtectedRoute requireOnboarding>
                       <Dashboard />
                     </ProtectedRoute>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/dashboard/client-acquisition"
-                element={
-                  <ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/dashboard/client-acquisition"
+                  element={
                     <ProtectedRoute requireOnboarding>
                       <ClientAcquisitionDashboard />
                     </ProtectedRoute>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/onboarding"
-                element={
-                  <ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/onboarding"
+                  element={
                     <ProtectedRoute>
                       <OnboardingQuiz />
                     </ProtectedRoute>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/billing"
-                element={
-                  <ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/billing"
+                  element={
                     <ProtectedRoute requireOnboarding>
                       <BillingPortal />
                     </ProtectedRoute>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/landing-pages"
-                element={
-                  <ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/landing-pages"
+                  element={
                     <ProtectedRoute requireOnboarding>
                       <LandingPageBuilder />
                     </ProtectedRoute>
-                  </ErrorBoundary>
-                }
-              />
-              <Route
-                path="/automation"
-                element={
-                  <ErrorBoundary>
+                  }
+                />
+                <Route
+                  path="/automation"
+                  element={
                     <ProtectedRoute requireOnboarding>
                       <AutomationDashboard />
                     </ProtectedRoute>
-                  </ErrorBoundary>
-                }
-              />
+                  }
+                />
 
-              {/* ---------- Admin Route ---------- */}
-              <Route
-                path="/admin"
-                element={
-                  <ErrorBoundary>
+                {/* ---------- Admin Route ---------- */}
+                <Route
+                  path="/admin"
+                  element={
                     <AdminRoute>
                       <AdminPanel />
                     </AdminRoute>
-                  </ErrorBoundary>
-                }
-              />
+                  }
+                />
 
-              {/* ---------- 404 Route ---------- */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
+                {/* ---------- 404 Route ---------- */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </ErrorBoundary>
           </TooltipProvider>
         </AppProvider>
       </QueryClientProvider>

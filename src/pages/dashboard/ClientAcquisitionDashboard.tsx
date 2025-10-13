@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { supabase } from "../../lib/supabase";
+import LeadsTracker from "../../components/LeadsTracker";
 
 const getTodayKey = () => new Date().toISOString().split("T")[0];
-const getMonthKey = () => `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
+const getMonthKey = () =>
+  `${new Date().getFullYear()}-${new Date().getMonth() + 1}`;
 
 export default function ClientAcquisitionDashboard() {
   const [loading, setLoading] = useState(true);
@@ -102,10 +104,15 @@ export default function ClientAcquisitionDashboard() {
     setStreak(0);
   };
 
-  if (loading) return <p className="p-6 text-center text-gray-500">Loading...</p>;
+  if (loading)
+    return <p className="p-6 text-center text-gray-500">Loading...</p>;
 
   const today = new Date();
-  const totalDays = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+  const totalDays = new Date(
+    today.getFullYear(),
+    today.getMonth() + 1,
+    0
+  ).getDate();
 
   const streakGlow =
     streak >= 14
@@ -163,7 +170,9 @@ export default function ClientAcquisitionDashboard() {
                 <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center font-bold text-white bg-yellow-500 rounded-full shadow">
                   {index + 1}
                 </div>
-                <p className="text-gray-800 text-base leading-relaxed">{step}</p>
+                <p className="text-gray-800 text-base leading-relaxed">
+                  {step}
+                </p>
               </li>
             ))}
           </ol>
@@ -172,15 +181,25 @@ export default function ClientAcquisitionDashboard() {
 
       {/* 📋 DAILY PROCESS REFERENCE */}
       <section>
-        <h2 className="font-semibold text-lg mt-10 mb-3">📋 Daily Process Reference</h2>
+        <h2 className="font-semibold text-lg mt-10 mb-3">
+          📋 Daily Process Reference
+        </h2>
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-200 rounded-lg text-sm bg-white shadow-sm">
             <thead className="bg-gray-50 border-b">
               <tr>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Step</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">What It Means</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Volume</th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">Tools</th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700">
+                  Step
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700">
+                  What It Means
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700">
+                  Volume
+                </th>
+                <th className="px-4 py-2 text-left font-semibold text-gray-700">
+                  Tools
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -238,7 +257,8 @@ export default function ClientAcquisitionDashboard() {
                 },
                 {
                   step: "8. Follow Up (next day)",
-                  meaning: "For non-responders or no-video views",
+                  meaning:
+                    "For non-responders or no-video views",
                   volume: "20–40/day",
                   tools: "“Just circling back in case...”",
                   color: "text-orange-700",
@@ -252,7 +272,9 @@ export default function ClientAcquisitionDashboard() {
                 },
               ].map((row, index) => (
                 <tr key={index} className="hover:bg-gray-50 transition">
-                  <td className={`px-4 py-3 font-medium ${row.color}`}>{row.step}</td>
+                  <td className={`px-4 py-3 font-medium ${row.color}`}>
+                    {row.step}
+                  </td>
                   <td className="px-4 py-3 text-gray-700">{row.meaning}</td>
                   <td className="px-4 py-3 text-gray-600">{row.volume}</td>
                   <td className="px-4 py-3 text-gray-700">{row.tools}</td>
@@ -305,7 +327,9 @@ export default function ClientAcquisitionDashboard() {
 
       {/* 🌸 MONTHLY TRACKER */}
       <section className="mt-10 text-center">
-        <h3 className="font-semibold text-gray-800 mb-1 text-lg">🌼 Monthly Progress Tracker</h3>
+        <h3 className="font-semibold text-gray-800 mb-1 text-lg">
+          🌼 Monthly Progress Tracker
+        </h3>
         <p className={`text-sm font-semibold ${streakGlow}`}>
           🔥 Current Streak: {streak} {streak === 1 ? "day" : "days"}
         </p>
@@ -313,14 +337,21 @@ export default function ClientAcquisitionDashboard() {
         <div className="flex flex-wrap justify-center gap-2 mt-4">
           {[...Array(totalDays)].map((_, i) => {
             const dayNum = i + 1;
-            const dateKey = new Date(today.getFullYear(), today.getMonth(), dayNum)
+            const dateKey = new Date(
+              today.getFullYear(),
+              today.getMonth(),
+              dayNum
+            )
               .toISOString()
               .split("T")[0];
             const completed = completedDays.includes(dateKey);
-            const formattedDate = new Date(dateKey).toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-            });
+            const formattedDate = new Date(dateKey).toLocaleDateString(
+              undefined,
+              {
+                month: "short",
+                day: "numeric",
+              }
+            );
             return (
               <button
                 key={i}
@@ -349,7 +380,13 @@ export default function ClientAcquisitionDashboard() {
           🔁 Reset Month
         </button>
       </section>
+
+      {/* 📋 LEADS TRACKER SECTION */}
+      <section className="mt-16">
+        <LeadsTracker />
+      </section>
     </div>
   );
 }
+
 

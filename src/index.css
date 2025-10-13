@@ -130,3 +130,53 @@
 .markdown-preview ol {
   @apply my-4 ml-6;
 }
+/* 🌟 Golden Toast Glow Animation */
+.toast-gold-glow {
+  background: linear-gradient(
+    120deg,
+    #fff9e6 0%,
+    #e6b325 40%,
+    #fff9e6 80%
+  );
+  background-size: 200% 200%;
+  animation: shimmer 6s ease-in-out infinite, fadeInUp 0.6s ease forwards;
+  border: 1px solid #e6b325;
+  box-shadow: 0 4px 12px rgba(230, 179, 37, 0.4);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease forwards;
+}
