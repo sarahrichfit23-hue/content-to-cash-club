@@ -16,6 +16,7 @@ export default function ClientAcquisitionDashboard() {
   const todayKey = `clientacquisition-checklist-${getTodayKey()}`;
   const monthKey = `clientacquisition-progress-${getMonthKey()}`;
 
+  // 🧠 Load saved state from localStorage
   useEffect(() => {
     const savedChecklist = localStorage.getItem(todayKey);
     const savedProgress = localStorage.getItem(monthKey);
@@ -26,15 +27,18 @@ export default function ClientAcquisitionDashboard() {
     setStreak(calculateStreak(savedDays));
   }, []);
 
+  // 💾 Save checklist to localStorage
   useEffect(() => {
     localStorage.setItem(todayKey, JSON.stringify(checklist));
   }, [checklist]);
 
+  // 💾 Save monthly progress to localStorage
   useEffect(() => {
     localStorage.setItem(monthKey, JSON.stringify(completedDays));
     setStreak(calculateStreak(completedDays));
   }, [completedDays]);
 
+  // 📘 Fetch latest daily instructions from Supabase
   useEffect(() => {
     const fetchInstructions = async () => {
       setLoading(true);
@@ -49,6 +53,7 @@ export default function ClientAcquisitionDashboard() {
     fetchInstructions();
   }, []);
 
+  // 🔥 Calculate streaks
   const calculateStreak = (days: string[]) => {
     if (!days.length) return 0;
     const sorted = [...days].sort();
@@ -179,112 +184,6 @@ export default function ClientAcquisitionDashboard() {
         </div>
       </section>
 
-      {/* 📋 DAILY PROCESS REFERENCE */}
-      <section>
-        <h2 className="font-semibold text-lg mt-10 mb-3">
-          📋 Daily Process Reference
-        </h2>
-        <div className="overflow-x-auto">
-          <table className="min-w-full border border-gray-200 rounded-lg text-sm bg-white shadow-sm">
-            <thead className="bg-gray-50 border-b">
-              <tr>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">
-                  Step
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">
-                  What It Means
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">
-                  Volume
-                </th>
-                <th className="px-4 py-2 text-left font-semibold text-gray-700">
-                  Tools
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {[
-                {
-                  step: "1. Find Leads",
-                  meaning:
-                    "Manually search for female health coaches by hashtags, bios, group posts, Skool members, Reddit comments",
-                  volume: "100/day",
-                  tools: "Instagram search, FB group lists, Skool, Reddit",
-                  color: "text-blue-700",
-                },
-                {
-                  step: "2. Open Profile, Confirm Fit",
-                  meaning:
-                    "Quick scan for: woman, coach, fitness/health niche, small audience, not wildly successful yet",
-                  volume: "100/day",
-                  tools: 'Use criteria: "Health Coach," "Helping women," "Online coach"',
-                  color: "text-purple-700",
-                },
-                {
-                  step: "3. Follow (IG/FB/Skool)",
-                  meaning: "Optional but improves DM delivery",
-                  volume: "80–100/day",
-                  tools: "Just tap follow while grabbing name",
-                  color: "text-pink-700",
-                },
-                {
-                  step: "4. Send 1st DM (Cold/Warm)",
-                  meaning: "Copy/paste a non-cringe opener",
-                  volume: "100/day",
-                  tools: "IG DMs, FB Messenger, Skool DM, Reddit chat",
-                  color: "text-red-700",
-                },
-                {
-                  step: "5. Track Every Message",
-                  meaning: "Google Sheet = Name, Platform, Date Sent, Response",
-                  volume: "100/day",
-                  tools: "Create 1 tab per platform",
-                  color: "text-yellow-700",
-                },
-                {
-                  step: "6. Respond to Replies",
-                  meaning: "Move convo forward (ask about biz)",
-                  volume: "10–20/day",
-                  tools: "Add warm tags in your tracker",
-                  color: "text-green-700",
-                },
-                {
-                  step: "7. Drop the Video (if aligned)",
-                  meaning: "ONLY after they express a problem/goal",
-                  volume: "3–5/day",
-                  tools: "“Want me to send a quick video?”",
-                  color: "text-blue-700",
-                },
-                {
-                  step: "8. Follow Up (next day)",
-                  meaning:
-                    "For non-responders or no-video views",
-                  volume: "20–40/day",
-                  tools: "“Just circling back in case...”",
-                  color: "text-orange-700",
-                },
-                {
-                  step: "9. Invite to Call",
-                  meaning: "For warmest leads who watched the video",
-                  volume: "1–3/day",
-                  tools: "“Let’s map out how this could work for you.”",
-                  color: "text-red-700",
-                },
-              ].map((row, index) => (
-                <tr key={index} className="hover:bg-gray-50 transition">
-                  <td className={`px-4 py-3 font-medium ${row.color}`}>
-                    {row.step}
-                  </td>
-                  <td className="px-4 py-3 text-gray-700">{row.meaning}</td>
-                  <td className="px-4 py-3 text-gray-600">{row.volume}</td>
-                  <td className="px-4 py-3 text-gray-700">{row.tools}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       {/* ✅ DAILY CHECKLIST */}
       <section>
         <div className="flex items-center justify-between mb-4">
@@ -384,9 +283,25 @@ export default function ClientAcquisitionDashboard() {
       {/* 📋 LEADS TRACKER SECTION */}
       <section className="mt-16">
         <LeadsTracker />
+
+        {/* 📤 Push Leads to CRM */}
+        <div className="mt-6 text-center">
+          <button
+            onClick={() =>
+              alert(
+                "✅ All leads are automatically synced to your CRM under 'Client Acquisition'."
+              )
+            }
+            className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition"
+          >
+            🚀 Send to CRM
+          </button>
+          <p className="text-xs text-gray-500 mt-2">
+            (Leads from this dashboard are saved under “Client Acquisition” in
+            CRM)
+          </p>
+        </div>
       </section>
     </div>
   );
 }
-
-

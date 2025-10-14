@@ -5,6 +5,7 @@ import typography from "@tailwindcss/typography";
 export default {
   darkMode: ["class"],
   content: [
+    "./index.html",
     "./pages/**/*.{ts,tsx}",
     "./components/**/*.{ts,tsx}",
     "./app/**/*.{ts,tsx}",
@@ -21,58 +22,35 @@ export default {
     },
     extend: {
       colors: {
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        background: "#fffdf7",
+        foreground: "#2e2b26",
+
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))'
-        },
-        secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))'
-        },
-        destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))'
-        },
-        muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))'
+          DEFAULT: "#e4b363", // warm gold
+          foreground: "#2e2b26",
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))'
+          DEFAULT: "#c97b63", // soft clay tone
+          foreground: "#fffdf7",
         },
-        popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))'
-        },
+        highlight: "#ffeecf",
+        muted: "#f6f2ea",
+        border: "#e7dfd3",
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))'
+          DEFAULT: "#fffaf1",
+          foreground: "#2e2b26",
         },
-        sidebar: {
-          DEFAULT: 'hsl(var(--sidebar-background))',
-          foreground: 'hsl(var(--sidebar-foreground))',
-          primary: 'hsl(var(--sidebar-primary))',
-          'primary-foreground': 'hsl(var(--sidebar-primary-foreground))',
-          accent: 'hsl(var(--sidebar-accent))',
-          'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
-          border: 'hsl(var(--sidebar-border))',
-          ring: 'hsl(var(--sidebar-ring))'
-        }
       },
       fontFamily: {
+        sans: ['Karla', 'sans-serif'],
+        serif: ['Playfair Display', 'serif'],
         mono: ['JetBrains Mono', 'monospace'],
-        sans: ['Inter', 'sans-serif'],
       },
       borderRadius: {
-        lg: 'calc(var(--radius) + 2px)',
-        md: 'var(--radius)',
-        sm: 'calc(var(--radius) - 2px)'
+        xl: "10px",
+        lg: "8px",
+        md: "6px",
+        sm: "4px",
       },
       keyframes: {
         'accordion-down': {
@@ -83,29 +61,37 @@ export default {
           from: { height: 'var(--radix-accordion-content-height)' },
           to: { height: '0' },
         },
-        'fade-in': {
-          from: { opacity: '0' },
-          to: { opacity: '1' },
+        shimmer: {
+          '0%': { backgroundPosition: '0% 50%' },
+          '50%': { backgroundPosition: '100% 50%' },
+          '100%': { backgroundPosition: '0% 50%' },
         },
-        'slide-in': {
-          from: { transform: 'translateY(10px)', opacity: '0' },
-          to: { transform: 'translateY(0)', opacity: '1' },
+        fadeIn: {
+          from: { opacity: '0', transform: 'scale(0.98)' },
+          to: { opacity: '1', transform: 'scale(1)' },
         },
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'fade-in': 'fade-in 0.3s ease-out',
-        'slide-in': 'slide-in 0.3s ease-out',
+        shimmer: 'shimmer 6s ease-in-out infinite',
+        fadeIn: 'fadeIn 0.6s ease forwards',
       },
       typography: {
         DEFAULT: {
           css: {
-            maxWidth: 'none',
+            color: '#2e2b26',
+            a: {
+              color: '#c97b63',
+              '&:hover': { color: '#e4b363' },
+            },
+            h1: { fontFamily: 'Playfair Display, serif' },
+            h2: { fontFamily: 'Playfair Display, serif' },
+            h3: { fontFamily: 'Playfair Display, serif' },
           },
         },
       },
-    }
+    },
   },
   plugins: [
     animate,

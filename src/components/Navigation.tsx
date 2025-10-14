@@ -18,18 +18,24 @@ const Navigation: React.FC = () => {
   const navigate = useNavigate();
 
   const getTierColor = (tier?: string) => {
-    switch(tier) {
-      case 'elite': return 'bg-gradient-to-r from-purple-600 to-purple-500';
-      case 'pro': return 'bg-gradient-to-r from-olive-600 to-olive-500';
-      default: return 'bg-gray-600';
+    switch (tier) {
+      case 'elite':
+        return 'bg-gradient-to-r from-purple-600 to-purple-500';
+      case 'pro':
+        return 'bg-gradient-to-r from-olive-600 to-olive-500';
+      default:
+        return 'bg-gray-600';
     }
   };
 
   const getTierLabel = (tier?: string) => {
-    switch(tier) {
-      case 'elite': return 'Elite';
-      case 'pro': return 'Pro';
-      default: return 'Starter';
+    switch (tier) {
+      case 'elite':
+        return 'Elite';
+      case 'pro':
+        return 'Pro';
+      default:
+        return 'Starter';
     }
   };
 
@@ -37,28 +43,48 @@ const Navigation: React.FC = () => {
     await signOut(navigate);
   };
 
-
   return (
-    <nav className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
+    <header className="fixed top-0 left-0 right-0 bg-white border-b border-gray-200 z-50">
       <div className="container mx-auto px-6">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-8">
             <Link to={user ? '/dashboard' : '/'} className="flex items-center gap-2">
               <Sparkles className="w-6 h-6 text-yellow-600" />
-              <span className="text-xl font-bold text-gray-900">Content to Cash Club</span>
+              <span className="text-xl font-bold text-gray-900">
+                Content to Cash Club
+              </span>
             </Link>
 
-            {/* Nav Links - Only show when authenticated */}
+            {/* Links - Only show when authenticated */}
             {user && (
               <div className="hidden lg:flex items-center gap-6">
-                <Link to="/dashboard" className="text-gray-600 hover:text-gray-900 font-medium">Dashboard</Link>
-                <button onClick={() => navigate('/dashboard')} className="text-gray-600 hover:text-gray-900 font-medium">My Library</button>
-                <button onClick={() => navigate('/dashboard')} className="text-gray-600 hover:text-gray-900 font-medium">Community</button>
-                <button onClick={() => navigate('/dashboard')} className="text-gray-600 hover:text-gray-900 font-medium">Analytics</button>
+                <Link
+                  to="/dashboard"
+                  className="text-gray-600 hover:text-gray-900 font-medium"
+                >
+                  Dashboard
+                </Link>
+                <Link
+                  to="/library"
+                  className="text-gray-600 hover:text-gray-900 font-medium"
+                >
+                  My Library
+                </Link>
+                <Link
+                  to="/community"
+                  className="text-gray-600 hover:text-gray-900 font-medium"
+                >
+                  Community
+                </Link>
+                <Link
+                  to="/analytics"
+                  className="text-gray-600 hover:text-gray-900 font-medium"
+                >
+                  Analytics
+                </Link>
               </div>
             )}
-
           </div>
 
           {/* Right Side */}
@@ -76,13 +102,17 @@ const Navigation: React.FC = () => {
 
                 {/* Tier Badge */}
                 {subscription && (
-                  <div className={`px-3 py-1 rounded-full text-white text-xs font-bold ${getTierColor(subscription.tier)}`}>
+                  <div
+                    className={`px-3 py-1 rounded-full text-white text-xs font-bold ${getTierColor(
+                      subscription.tier
+                    )}`}
+                  >
                     {getTierLabel(subscription.tier)}
                   </div>
                 )}
 
                 {/* Generate Button */}
-                <button 
+                <button
                   onClick={() => navigate('/dashboard')}
                   className="px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white font-medium rounded-lg hover:shadow-md transition-all"
                 >
@@ -102,7 +132,9 @@ const Navigation: React.FC = () => {
                   <DropdownMenuContent align="end" className="w-56">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
-                        <p className="text-sm font-medium">{profile?.full_name || 'User'}</p>
+                        <p className="text-sm font-medium">
+                          {profile?.full_name || 'User'}
+                        </p>
                         <p className="text-xs text-gray-500">{user.email}</p>
                       </div>
                     </DropdownMenuLabel>
@@ -125,13 +157,13 @@ const Navigation: React.FC = () => {
               </>
             ) : (
               <>
-                <Link 
+                <Link
                   to="/login"
                   className="px-4 py-2 text-gray-700 font-medium hover:text-gray-900 transition-colors"
                 >
                   Sign In
                 </Link>
-                <Link 
+                <Link
                   to="/signup"
                   className="px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white font-medium rounded-lg hover:shadow-md transition-all"
                 >
@@ -142,7 +174,7 @@ const Navigation: React.FC = () => {
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 
