@@ -1,5 +1,3 @@
-
-
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Karla:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 @tailwind base;
@@ -102,11 +100,17 @@
     padding: 0;
   }
 
-  pre, code {
+  pre,
+  code {
     @apply font-mono;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     font-family: 'Playfair Display', serif;
     letter-spacing: -0.5px;
   }
@@ -122,7 +126,8 @@
 }
 
 .markdown-preview pre {
-  @apply bg-highlight p-4 rounded-md overflow-x-auto;
+  background-color: hsl(var(--secondary));
+  @apply p-4 rounded-md overflow-x-auto;
 }
 
 .markdown-preview code {
@@ -152,7 +157,7 @@ button {
   padding: 10px 20px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.05);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
   transition: all 0.2s ease;
 }
 
@@ -162,11 +167,12 @@ button:hover {
   transform: translateY(-1px);
 }
 
-.card, .container {
+.card,
+.container {
   background: hsl(var(--secondary));
   border-radius: var(--radius);
   padding: 24px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   margin-bottom: 20px;
 }
 
@@ -205,19 +211,37 @@ hr {
 
 /* Animations */
 @keyframes shimmer {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: scale(0.98); }
-  to { opacity: 1; transform: scale(1); }
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 .animate-fadeIn {
