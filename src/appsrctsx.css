@@ -1,0 +1,249 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Karla:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* 🌻 Warm Editorial Light Theme */
+    --background: 45 60% 98%; /* warm cream */
+    --foreground: 30 30% 20%; /* deep brown text */
+
+    --card: 0 0% 100%;
+    --card-foreground: 30 30% 20%;
+
+    --popover: 45 60% 98%;
+    --popover-foreground: 30 30% 20%;
+
+    --primary: 40 70% 60%; /* golden honey */
+    --primary-foreground: 45 40% 98%;
+
+    --secondary: 30 20% 92%; /* soft beige */
+    --secondary-foreground: 30 30% 20%;
+
+    --muted: 40 20% 90%;
+    --muted-foreground: 25 15% 40%;
+
+    --accent: 20 45% 65%; /* clay */
+    --accent-foreground: 45 60% 98%;
+
+    --destructive: 10 70% 40%;
+    --destructive-foreground: 45 60% 98%;
+
+    --border: 35 20% 88%;
+    --input: 35 20% 88%;
+    --ring: 40 70% 60%;
+
+    --radius: 0.75rem;
+
+    /* Sidebar */
+    --sidebar-background: 45 60% 97%;
+    --sidebar-foreground: 30 30% 20%;
+    --sidebar-primary: 40 70% 60%;
+    --sidebar-primary-foreground: 45 60% 98%;
+    --sidebar-accent: 40 25% 90%;
+    --sidebar-accent-foreground: 30 30% 20%;
+    --sidebar-border: 35 20% 88%;
+    --sidebar-ring: 40 70% 60%;
+  }
+
+  .dark {
+    /* 🌙 Espresso Dark Mode */
+    --background: 30 20% 10%;
+    --foreground: 45 30% 96%;
+
+    --card: 30 20% 15%;
+    --card-foreground: 45 30% 96%;
+
+    --popover: 30 20% 10%;
+    --popover-foreground: 45 30% 96%;
+
+    --primary: 40 60% 55%; /* golden highlight */
+    --primary-foreground: 30 20% 10%;
+
+    --secondary: 25 15% 20%;
+    --secondary-foreground: 45 30% 96%;
+
+    --muted: 25 15% 20%;
+    --muted-foreground: 45 25% 80%;
+
+    --accent: 20 35% 50%; /* soft terracotta */
+    --accent-foreground: 45 60% 98%;
+
+    --destructive: 10 50% 40%;
+    --destructive-foreground: 45 60% 98%;
+
+    --border: 25 15% 25%;
+    --input: 25 15% 25%;
+    --ring: 40 60% 55%;
+
+    --sidebar-background: 25 15% 15%;
+    --sidebar-foreground: 45 30% 96%;
+    --sidebar-primary: 40 60% 55%;
+    --sidebar-primary-foreground: 30 20% 10%;
+    --sidebar-accent: 25 15% 20%;
+    --sidebar-accent-foreground: 45 30% 96%;
+    --sidebar-border: 25 15% 25%;
+    --sidebar-ring: 40 60% 55%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground dark:bg-background dark:text-foreground;
+    font-family: 'Karla', sans-serif;
+    line-height: 1.7;
+    margin: 0;
+    padding: 0;
+  }
+
+  pre,
+  code {
+    @apply font-mono;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: 'Playfair Display', serif;
+    letter-spacing: -0.5px;
+  }
+}
+
+/* Markdown Editor + Preview */
+.markdown-editor {
+  @apply font-mono text-base leading-relaxed;
+}
+
+.markdown-preview {
+  @apply prose max-w-none prose-amber dark:prose-invert;
+}
+
+.markdown-preview pre {
+  background-color: hsl(var(--secondary));
+  @apply p-4 rounded-md overflow-x-auto;
+}
+
+.markdown-preview code {
+  @apply text-sm font-mono text-primary;
+}
+
+.markdown-preview h1,
+.markdown-preview h2,
+.markdown-preview h3,
+.markdown-preview h4,
+.markdown-preview h5,
+.markdown-preview h6 {
+  @apply font-[Playfair_Display] font-semibold text-foreground;
+}
+
+.markdown-preview ul,
+.markdown-preview ol {
+  @apply my-4 ml-6;
+}
+
+/* ✨ Buttons, Cards, and Containers */
+button {
+  background-color: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border: none;
+  border-radius: var(--radius);
+  padding: 10px 20px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+button:hover {
+  background-color: hsl(var(--accent));
+  color: white;
+  transform: translateY(-1px);
+}
+
+.card,
+.container {
+  background: hsl(var(--secondary));
+  border-radius: var(--radius);
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  margin-bottom: 20px;
+}
+
+/* Links */
+a {
+  color: hsl(var(--accent));
+  text-decoration: none;
+  font-weight: 600;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Decorative Elements */
+img {
+  border-radius: var(--radius);
+  filter: brightness(0.98);
+}
+
+hr {
+  border: none;
+  height: 1px;
+  background: rgba(46, 43, 38, 0.1);
+  margin: 2rem 0;
+}
+
+/* 🌟 Golden Toast Glow Animation */
+.toast-gold-glow {
+  background: linear-gradient(120deg, #fff9e6 0%, #e6b325 40%, #fff9e6 80%);
+  background-size: 200% 200%;
+  animation: shimmer 6s ease-in-out infinite, fadeInUp 0.6s ease forwards;
+  border: 1px solid #e6b325;
+  box-shadow: 0 4px 12px rgba(230, 179, 37, 0.4);
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.6s ease forwards;
+}
