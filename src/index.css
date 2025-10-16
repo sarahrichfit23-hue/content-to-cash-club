@@ -143,9 +143,18 @@
   @apply font-[Playfair_Display] font-semibold text-foreground;
 }
 
+/* ✅ Cleaned list styles (no SQL here) */
 .markdown-preview ul,
 .markdown-preview ol {
   @apply my-4 ml-6;
+}
+
+.markdown-preview ul {
+  list-style: disc;
+}
+
+.markdown-preview ol {
+  list-style: decimal;
 }
 
 /* ✨ Buttons, Cards, and Containers */

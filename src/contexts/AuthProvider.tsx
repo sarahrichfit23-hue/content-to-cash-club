@@ -1,78 +1,66 @@
-// src/contexts/AuthProvider.tsx
-import React, { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase'
-import { useNavigate } from 'react-router-dom'
+import { createContext, useContext, useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 
-type AuthContextType = {
-  session: any
-  user: any
-  loading: boolean
-  signOut: () => Promise<void>
+interface AuthContextType {
+  user: any;
+  role: string | null;
+  loading: boolean;
+  refreshRole: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
-  session: null,
   user: null,
+  role: null,
   loading: true,
-  signOut: async () => {},
-})
+  refreshRole: async () => {},
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const [session, setSession] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
-  const navigate = useNavigate()
+  const [user, setUser] = useState<any>(null);
+  const [role, setRole] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const fetchRole = async (uid: string) => {
+    const { data } = await supabase
+      .from("coaches")
+      .select("role")
+      .eq("id", uid)
+      .single();
+    setRole(data?.role || "free");
+  };
+
+  const refreshRole = async () => {
+    if (user?.id) await fetchRole(user.id);
+  };
 
   useEffect(() => {
-    // ✅ Restore session
-    supabase.auth.getSession().then(({ data }) => {
-      setSession(data.session)
-      setLoading(false)
-    })
+    const init = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      const currentUser = session?.user ?? null;
+      setUser(currentUser);
+      if (currentUser) await fetchRole(currentUser.id);
+      setLoading(false);
+    };
+    init();
 
-    // ✅ Listen for login/logout events
     const { data: listener } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        console.log('🔐 Auth event:', event)
-        setSession(session)
-
-        if (event === 'SIGNED_IN') {
-          console.log('✅ User signed in')
-          navigate('/dashboard', { replace: true })
-        }
-
-        if (event === 'SIGNED_OUT') {
-          console.log('👋 User signed out')
-          navigate('/', { replace: true })
-        }
+      (_event, session) => {
+        const currentUser = session?.user ?? null;
+        setUser(currentUser);
+        if (currentUser) fetchRole(currentUser.id);
+        else setRole("free");
       }
-    )
-
-    return () => {
-      listener.subscription.unsubscribe()
-    }
-  }, [navigate])
-
-  const signOut = async () => {
-    await supabase.auth.signOut()
-    setSession(null)
-    navigate('/', { replace: true })
-  }
-
-  const value = {
-    session,
-    user: session?.user || null,
-    loading,
-    signOut,
-  }
+    );
+    return () => listener.subscription.unsubscribe();
+  }, []);
 
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, role, loading, refreshRole }}>
       {!loading && children}
     </AuthContext.Provider>
-  )
-}
+  );
+};
 
-export const useAuth = () => useContext(AuthContext)
-
-
-
+export const useAuth = () => useContext(AuthContext);

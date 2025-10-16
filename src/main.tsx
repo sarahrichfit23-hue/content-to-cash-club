@@ -1,19 +1,23 @@
-import './index.css';
+console.log("🧪 ENV CHECK:", import.meta.env.VITE_API_URL);
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
-import App from "./App";
-import { AuthProvider } from "./contexts/AuthProvider";
+import "./index.css";
+import App from "./App.tsx";
+import { UserProvider } from "./context/UserContext";
+import { Toaster } from "react-hot-toast";
 
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  const el = document.createElement("div");
+  el.id = "root";
+  document.body.appendChild(el);
+}
 
 ReactDOM.createRoot(document.getElementById("root")!).render(
   <React.StrictMode>
-    <BrowserRouter>
-      <AuthProvider>
-        <App />
-      </AuthProvider>
-    </BrowserRouter>
+    <UserProvider>
+      <App />
+      <Toaster position="top-center" />
+    </UserProvider>
   </React.StrictMode>
 );
-
-

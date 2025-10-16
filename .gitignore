@@ -1,8 +1,5 @@
-# Ignore environment secrets
+.vercel
+node_modules
+dist
+.vite
 .env
-
-# Node dependencies
-node_modules/
-
-# Build output
-dist/

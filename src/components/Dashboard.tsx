@@ -1,14 +1,15 @@
-import { useState } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import React, { useState } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { 
-  BarChart3, TrendingUp, Users, FileText, 
-  LayoutDashboard, Mail, Settings, Palette, 
-  Megaphone, Bot, Store, HeadphonesIcon, MessageSquare,
-  Zap, Webhook, ShoppingBag, Layout, Database, Brain, Users2, Gauge, Sparkles, Flame
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useToast } from '@/hooks/use-toast';
+
+import {
+  TrendingUp, Users, LayoutDashboard, Mail, Palette,
+  Store, MessageSquare, Grid3x3, Target, Calendar, Library,
+  CreditCard, Layout, Database, Brain, Users2, Sparkles, Flame,
+  AlertTriangle, GitBranch
 } from 'lucide-react';
 
 import ContentLibrary from './ContentLibrary';
@@ -18,7 +19,6 @@ import AnalyticsDashboard from './AnalyticsDashboard';
 import WhiteLabelDashboard from './whitelabel/WhiteLabelDashboard';
 import APIUsageDashboard from './APIUsageDashboard';
 import CommunityHub from './CommunityHub';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import Navigation from './Navigation';
 import { useApp } from '@/contexts/AppContext';
 import { useNavigate } from 'react-router-dom';
@@ -42,7 +42,6 @@ import DailyChallenge from './DailyChallenge';
 import WeeklyChallengeProgress from './WeeklyChallengeProgress';
 import { getTodaysQuote } from '@/data/dailyQuotes';
 
-import { Video, Grid3x3, Hash, Target, Calendar, Star, Library, CreditCard, Bell, Activity, AlertTriangle, GitBranch } from 'lucide-react';
 import ContentPackCard from './ContentPackCard';
 import { seedPack } from '@/data/seedData';
 import BillingPortal from './BillingPortal';
@@ -50,6 +49,8 @@ import PaymentUpdateModal from './PaymentUpdateModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import MonthlyContentPack from './MonthlyContentPack';
 import ClientAcquisitionDashboard from '@/pages/dashboard/ClientAcquisitionDashboard';
+import MealPlans from '@/pages/MealPlans';
+import UpgradeModal from '@/components/UpgradeModal'; // 💎 new modal import
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
@@ -79,26 +80,67 @@ const Dashboard: React.FC = () => {
   const { user, profile } = useApp();
   const navigate = useNavigate();
   const { subscription, isInGracePeriod } = useSubscription(user?.id || '');
+  const { toast } = useToast();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false); // 💎 new modal state
 
   const stats = [
     { label: 'Assets Generated', value: '127', icon: <TrendingUp className="w-5 h-5" /> },
     { label: 'This Month', value: '42', icon: <Calendar className="w-5 h-5" /> },
-    { label: 'Saved', value: '89', icon: <Star className="w-5 h-5" /> },
+    { label: 'Saved', value: '89', icon: <Users className="w-5 h-5" /> },
     { label: 'Community Wins', value: '15', icon: <Users className="w-5 h-5" /> },
   ];
 
   return (
     <>
       <Navigation />
-      <div className="min-h-screen bg-gray-50 pt-20">
+
+      {/* ✅ RESTORED WRAPPERS */}
+      <div className="min-h-screen bg-gray-50 pt-28">
         <div className="container mx-auto px-6 py-8">
+
+          {/* Header w/ Meal Plans + Upgrade button */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Welcome back, {profile?.full_name || 'Coach'}!
-            </h1>
-            <p className="text-gray-600">
-              Your {seedPack.theme} content pack is ready to personalize
-            </p>
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h1 className="text-3xl font-bold text-gray-900 mb-2">
+                  Welcome back, {profile?.full_name || 'Coach'}!
+                </h1>
+                <p className="text-gray-600">
+                  Your {seedPack.theme} content pack is ready to personalize
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {/* 🍽️ Meal Plans button */}
+                <Button
+                  onClick={() => navigate('/meal-plans')}
+                  className="bg-amber-600 hover:bg-amber-700 text-white"
+                  title="Create and view AI meal plans"
+                >
+                  🍽️ Meal Plans
+                </Button>
+
+                {/* 💎 Upgrade button (opens modal) */}
+                {profile?.role !== 'pro' && (
+                  <>
+                    <Button
+                      onClick={() => setShowUpgradeModal(true)}
+                      className="bg-yellow-600 hover:bg-yellow-700 text-white"
+                    >
+                      💎 Upgrade
+                    </Button>
+
+                    {/* Updated modal call with currentPlan awareness */}
+                    {showUpgradeModal && (
+                      <UpgradeModal
+                        currentPlan={profile?.role || 'starter'}
+                        onClose={() => setShowUpgradeModal(false)}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
+            </div>
           </div>
 
           {isInGracePeriod() && (
@@ -116,10 +158,9 @@ const Dashboard: React.FC = () => {
             </Alert>
           )}
 
+          {/* ===== Dashboard Tabs ===== */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
             <TabsList className="mb-6 flex-wrap h-auto">
-
-              {/* 👇 New Tab Order */}
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <LayoutDashboard className="w-4 h-4" /> Dashboard Home
               </TabsTrigger>
@@ -200,17 +241,11 @@ const Dashboard: React.FC = () => {
                 <Palette className="w-4 h-4" /> White Label
               </TabsTrigger>
 
-              {/* 🚫 Hidden Tabs for Demo */}
-              {/* <TabsTrigger value="analytics">Analytics</TabsTrigger> */}
-              {/* <TabsTrigger value="notifications">Notifications</TabsTrigger> */}
-              {/* <TabsTrigger value="webhooks">Webhooks</TabsTrigger> */}
-              {/* <TabsTrigger value="engagement">Email Engagement</TabsTrigger> */}
-              {/* <TabsTrigger value="api">API Usage</TabsTrigger> */}
-
+              <TabsTrigger value="mealplans" className="flex items-center gap-2">
+                <Calendar className="w-4 h-4" /> Meal Plans
+              </TabsTrigger>
             </TabsList>
-            {/* --- TAB CONTENT START --- */}
 
-            {/* 🏠 Dashboard Home */}
             <TabsContent value="overview">
               <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 text-center mb-8 border-4 border-yellow-400">
                 <p className="text-2xl lg:text-3xl font-bold text-white italic leading-relaxed">
@@ -251,110 +286,32 @@ const Dashboard: React.FC = () => {
               </div>
             </TabsContent>
 
-            {/* 🔥 Accountability */}
-            <TabsContent value="accountability">
-              <DailyChallenge />
-            </TabsContent>
-
-            {/* 🧬 Brand DNA */}
+            {/* Other tabs unchanged */}
+            <TabsContent value="accountability"><DailyChallenge /></TabsContent>
             <TabsContent value="branddna">
               <div className="space-y-6">
                 <BrandDNAPDFExport userId={user?.id || ''} />
                 <BrandDNAWizard onComplete={() => setActiveTab('ai')} />
               </div>
             </TabsContent>
-
-            {/* 🤖 AI Generator */}
-            <TabsContent value="ai">
-              <AIContentGenerator />
-            </TabsContent>
-
-            {/* 🧠 Content Strategy */}
-            <TabsContent value="strategy">
-              <ContentStrategyEngine />
-            </TabsContent>
-
-            {/* 🎯 Client Acquisition */}
-            <TabsContent value="clientacquisition">
-              <ClientAcquisitionDashboard />
-            </TabsContent>
-
-            {/* 📦 Content Packs */}
-            <TabsContent value="content">
-              <MonthlyContentPack />
-            </TabsContent>
-
-            {/* 🗓 Content Planner */}
-            <TabsContent value="planner">
-              <ContentPlanner />
-            </TabsContent>
-
-            {/* 📋 CRM / Subscribers */}
-            <TabsContent value="subscribers">
-              <SubscriberDashboard />
-            </TabsContent>
-
-            {/* 📚 My Library */}
-            <TabsContent value="library">
-              <ContentLibrary />
-            </TabsContent>
-
-            {/* 🏗 Landing Pages */}
-            <TabsContent value="landing">
-              <LandingPageBuilder />
-            </TabsContent>
-
-            {/* 👥 Community */}
-            <TabsContent value="community">
-              <CommunityHub />
-            </TabsContent>
-
-            {/* 🛍 Marketplace */}
-            <TabsContent value="marketplace">
-              <TemplateMarketplace />
-            </TabsContent>
-
-            {/* 🎨 Creator Dashboard */}
-            <TabsContent value="creator">
-              <CreatorDashboard />
-            </TabsContent>
-
-            {/* 💬 SMS */}
-            <TabsContent value="sms">
-              <SMSDashboard />
-            </TabsContent>
-
-            {/* 👥 Teams */}
-            <TabsContent value="teams">
-              <TeamDashboard />
-            </TabsContent>
-
-            {/* 💳 Billing */}
-            <TabsContent value="billing">
-              <BillingPortal userId={user?.id || ''} />
-            </TabsContent>
-
-            {/* 📨 Email Workflows */}
-            <TabsContent value="workflows">
-              <EmailWorkflowBuilder />
-            </TabsContent>
-
-            {/* 📨 Email Campaigns */}
-            <TabsContent value="campaigns">
-              <EmailCampaignBuilder />
-            </TabsContent>
-
-            {/* 🎨 White Label */}
-            <TabsContent value="whitelabel">
-              <WhiteLabelDashboard />
-            </TabsContent>
-
-            {/* 🚫 Hidden / Not in Demo */}
-            {/* <TabsContent value="analytics"><AnalyticsDashboard /></TabsContent> */}
-            {/* <TabsContent value="notifications"><NotificationSettings /></TabsContent> */}
-            {/* <TabsContent value="engagement"><EmailEngagement /></TabsContent> */}
-            {/* <TabsContent value="webhooks"><WebhookDashboard /></TabsContent> */}
-            {/* <TabsContent value="api"><APIUsageDashboard /></TabsContent> */}
+            <TabsContent value="ai"><AIContentGenerator /></TabsContent>
+            <TabsContent value="strategy"><ContentStrategyEngine /></TabsContent>
+            <TabsContent value="clientacquisition"><ClientAcquisitionDashboard /></TabsContent>
+            <TabsContent value="content"><MonthlyContentPack /></TabsContent>
+            <TabsContent value="planner"><ContentPlanner /></TabsContent>
+            <TabsContent value="subscribers"><SubscriberDashboard /></TabsContent>
+            <TabsContent value="library"><ContentLibrary /></TabsContent>
+            <TabsContent value="landing"><LandingPageBuilder /></TabsContent>
+            <TabsContent value="community"><CommunityHub /></TabsContent>
+            <TabsContent value="marketplace"><TemplateMarketplace /></TabsContent>
+            <TabsContent value="creator"><CreatorDashboard /></TabsContent>
+            <TabsContent value="sms"><SMSDashboard /></TabsContent>
+            <TabsContent value="teams"><TeamDashboard /></TabsContent>
+            <TabsContent value="billing"><BillingPortal userId={user?.id || ''} /></TabsContent>
+            <TabsContent value="workflows"><EmailWorkflowBuilder /></TabsContent>
+            <TabsContent value="campaigns"><EmailCampaignBuilder /></TabsContent>
+            <TabsContent value="whitelabel"><WhiteLabelDashboard /></TabsContent>
+            <TabsContent value="mealplans"><MealPlans /></TabsContent>
           </Tabs>
         </div>
       </div>

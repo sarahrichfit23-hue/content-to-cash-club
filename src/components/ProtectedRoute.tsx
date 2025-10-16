@@ -1,38 +1,33 @@
-import React, { useEffect } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
-import { useAppContext } from "@/contexts/AppContext";
+import React from "react";
+import { Navigate, useLocation } from "react-router-dom";
+import { supabase } from "@/lib/supabase";
 
-interface ProtectedRouteProps {
-  children: React.ReactNode;
-  requireOnboarding?: boolean;
-}
+type Props = { children: React.ReactNode };
 
-const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
-  const { user, loading } = useAppContext();
-  const navigate = useNavigate();
+export default function ProtectedRoute({ children }: Props) {
+  const [loading, setLoading] = React.useState(true);
+  const [isAuthed, setIsAuthed] = React.useState<boolean>(false);
+  const location = useLocation();
 
-  // ✅ All hooks must be called before any return statement
-  useEffect(() => {
-    if (!user && !loading) {
-      console.log("🚪 User logged out — forcing redirect to /signed-out");
-      navigate("/signed-out", { replace: true });
-    }
-  }, [user, loading, navigate]);
+  React.useEffect(() => {
+    let mounted = true;
+    (async () => {
+      const { data } = await supabase.auth.getSession();
+      if (!mounted) return;
+      setIsAuthed(Boolean(data.session));
+      setLoading(false);
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-  // ⏳ Wait until Supabase finishes checking session
-  if (loading) {
-    return <div>Loading...</div>;
+  if (loading) return <div style={{ padding: 24 }}>Loading session…</div>;
+
+  if (!isAuthed) {
+    const redirect = encodeURIComponent(location.pathname + location.search);
+    return <Navigate to={`/login?redirect=${redirect}`} replace />;
   }
 
-  // 🚫 If user is not logged in → redirect to landing page
-  if (!user) {
-    console.log("🔒 ProtectedRoute: No user session, redirecting to /");
-    return <Navigate to="/" replace />;
-  }
-
-  // ✅ Logged-in user → allow access
   return <>{children}</>;
-};
-
-export default ProtectedRoute;
-
+}

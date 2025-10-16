@@ -1,241 +1,76 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
-import { toast } from '@/hooks/use-toast';
-import { handleLogout } from '@/lib/logoutHandler';
+// src/contexts/AppContext.tsx
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useAuth } from './AuthProvider';
+import { supabase } from '@/lib/supabaseClient';
 
-interface Profile {
+type Profile = {
   id: string;
-  email: string;
-  full_name?: string;
-  brand_name?: string;
-  brand_dna?: any;
-  onboarding_completed: boolean;
-  created_at: string;
-  updated_at: string;
-}
+  full_name?: string | null;
+} | null;
 
-interface Subscription {
-  id: string;
-  user_id: string;
-  stripe_customer_id: string;
-  stripe_subscription_id: string;
-  status: string;
-  tier: string;
-  current_period_end: string;
-  cancel_at_period_end: boolean;
-  grace_period_end?: string;
-}
-
-interface AppContextType {
-  user: User | null;
-  profile: Profile | null;
-  subscription: Subscription | null;
-  loading: boolean;
-  sidebarOpen: boolean;
-  brandDNA: any;
-  toggleSidebar: () => void;
-  signOut: (navigate?: any) => Promise<void>;
-  updateProfile: (updates: Partial<Profile>) => Promise<void>;
-  refreshSubscription: () => Promise<void>;
-}
-
-const AppContext = createContext<AppContextType | undefined>(undefined);
-
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error('useApp must be used within AppProvider');
-  }
-  return context;
+type AppCtx = {
+  profile: Profile;
+  refreshProfile: () => Promise<void>;
 };
 
-export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [subscription, setSubscription] = useState<Subscription | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+const AppContext = createContext<AppCtx>({
+  profile: null,
+  refreshProfile: async () => {},
+});
 
-  // ✅ Toggle sidebar visibility
-  const toggleSidebar = () => setSidebarOpen((prev) => !prev);
+export const useApp = () => useContext(AppContext);
 
-  // ✅ Fetch profile
-  const fetchProfile = async (userId: string) => {
+export function AppProvider({ children }: { children: React.ReactNode }) {
+  const { user, ready } = useAuth();
+  const [profile, setProfile] = useState<Profile>(null);
+
+  const load = async () => {
+    if (!user) {
+      setProfile(null);
+      return;
+    }
     try {
+      // If you don't have a 'profiles' table, this gracefully falls back
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
-        .eq('id', userId)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      setProfile(data || null);
-    } catch (error) {
-      console.error('⚠️ Error fetching profile:', error);
-    }
-  };
-
-  // ✅ Fetch subscription
-  const fetchSubscription = async (userId: string) => {
-    try {
-      const { data, error } = await supabase
-        .from('subscriptions')
-        .select('*')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      if (error && error.code !== 'PGRST116') throw error;
-      setSubscription(data || null);
-    } catch (error) {
-      console.error('⚠️ Error fetching subscription:', error);
-    }
-  };
-
-const signOut = async (navigate?: any) => {
-  try {
-    console.log('🚪 Signing out...');
-
-    toast({
-      title: 'Signing out…',
-      description: 'We’re safely logging you out.',
-    });
-
-    // ✅ Step 1: clear Supabase session
-    const { error } = await supabase.auth.signOut();
-    if (error) console.error('❌ Supabase signOut error:', error);
-
-    // ✅ Step 2: clear local state
-    setUser(null);
-    setProfile(null);
-    setSubscription(null);
-
-    // ✅ Step 3: clear storage
-    localStorage.removeItem('supabase.auth.token');
-    sessionStorage.clear();
-
-    // ✅ Step 4: redirect
-    if (navigate) {
-      console.log('➡️ Redirecting via handleLogout...');
-      await handleLogout(navigate);
-    } else {
-      window.location.replace('/signed-out');
-    }
-
-    console.log('✅ Sign-out complete!');
-  } catch (err) {
-    console.error('⚠️ Sign-out error:', err);
-    toast({
-      title: 'Error signing out',
-      description: 'Something went wrong. Please try again.',
-      variant: 'destructive',
-    });
-  }
-};
-
-
-
-  // ✅ Update profile
-  const updateProfile = async (updates: Partial<Profile>) => {
-    if (!user) return;
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .update({ ...updates, updated_at: new Date().toISOString() })
+        .select('id, full_name')
         .eq('id', user.id)
-        .select('*')
         .maybeSingle();
-
       if (error) throw error;
-
-      setProfile(data);
-      toast({
-        title: 'Profile updated',
-        description: 'Your profile has been successfully updated.',
-      });
-    } catch (error) {
-      console.error('⚠️ Error updating profile:', error);
+      setProfile(data ?? { id: user.id, full_name: user.user_metadata?.full_name ?? null });
+    } catch {
+      setProfile({ id: user.id, full_name: user.user_metadata?.full_name ?? null });
     }
   };
 
-  // ✅ Refresh subscription
-  const refreshSubscription = async () => {
-    if (!user) return;
-    await fetchSubscription(user.id);
-  };
-
-  // ✅ Auth state listener (handles SIGNED_OUT immediately)
   useEffect(() => {
-    let mounted = true;
-
-    const initAuth = async () => {
-      try {
-        const {
-          data: { session },
-        } = await supabase.auth.getSession();
-
-        if (mounted && session?.user) {
-          setUser(session.user);
-          await fetchProfile(session.user.id);
-          await fetchSubscription(session.user.id);
-        }
-      } catch (error) {
-        console.error('⚠️ Error initializing auth:', error);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    initAuth();
-
-    const {
-      data: { subscription: authSub },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔐 Auth event:', event);
-
-      // 🔴 Handle instant sign-out response
-      if (event === 'SIGNED_OUT' || !session) {
-        setUser(null);
-        setProfile(null);
-        setSubscription(null);
-        setLoading(false);
-        return;
-      }
-
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-        await fetchSubscription(session.user.id);
-      }
-
-      setLoading(false);
-    });
-
-    return () => {
-      mounted = false;
-      authSub.unsubscribe();
-    };
-  }, []);
+    if (!ready) return;
+    load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ready, user?.id]);
 
   return (
-    <AppContext.Provider
-      value={{
-        user,
-        profile,
-        subscription,
-        loading,
-        sidebarOpen,
-        brandDNA: profile?.brand_dna || null,
-        toggleSidebar,
-        signOut,
-        updateProfile,
-        refreshSubscription,
-      }}
-    >
+    <AppContext.Provider value={{ profile, refreshProfile: load }}>
       {children}
     </AppContext.Provider>
   );
-};
+}
 
-export const useAppContext = useApp;
-
+/**
+ * ✅ Compatibility shim for old code
+ * Many components still import/use `useAppContext()` and expect:
+ *   - user
+ *   - loading
+ *   - brandDNA (optional in some places)
+ * We map these to the new providers so you don't have to rewrite 20+ files right now.
+ */
+export function useAppContext() {
+  const { user, ready } = useAuth();
+  const { profile } = useApp();
+  return {
+    user,                // same as before
+    loading: !ready,     // old code used `loading`; we map it to !ready
+    profile,
+    brandDNA: null as any, // placeholder so imports don't break; wire real Brand DNA later
+  };
+}

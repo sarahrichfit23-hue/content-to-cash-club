@@ -1,132 +1,80 @@
-// src/App.tsx
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import React from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route } from "react-router-dom";
+
+import { AuthProvider } from "@/contexts/AuthProvider";
 import { AppProvider } from "@/contexts/AppContext";
-import { ErrorBoundary } from "@/components/system/ErrorBoundary";
-import { useAuth } from "./contexts/AuthProvider"; // ✅ Supabase session handling
 
-// Public pages
-import Home from "./pages/Home";
-import NotFound from "./pages/NotFound";
-import SignedOut from "./pages/SignedOut";
+import Dashboard from "@/components/Dashboard";
+import MealPlans from "@/pages/MealPlans";
+import Login from "@/components/auth/Login";
+import ProtectedRoute from "@/components/ProtectedRoute";
+import { TierProtectedRoute } from "@/components/TierProtectedRoute";
+import Upgrade from "@/pages/Upgrade";
 
-// Auth pages
-import SignUp from "./components/auth/SignUp";
-import Login from "./components/auth/Login";
-import ResetPassword from "./components/auth/ResetPassword";
-import UpdatePassword from "./components/auth/UpdatePassword";
-import AuthCallback from "./components/auth/AuthCallback";
-
-// Protected pages
-import Dashboard from "./components/Dashboard";
-import OnboardingQuiz from "./components/OnboardingQuiz";
-import BillingPortal from "./components/BillingPortal";
-import ProtectedRoute from "./components/ProtectedRoute";
-import LandingPageBuilder from "./components/landing/LandingPageBuilder";
-import AdminRoute from "./components/admin/AdminRoute";
-import AdminPanel from "./pages/AdminPanel";
-import AutomationDashboard from "./components/automation/AutomationDashboard";
-import ClientAcquisitionDashboard from "./pages/dashboard/ClientAcquisitionDashboard";
+function NotFound() {
+  return (
+    <div style={{ padding: 24 }}>
+      <h2>404 — Not Found</h2>
+      <p>That page doesn’t exist.</p>
+      <a href="/login" style={{ color: "#2563eb", textDecoration: "underline" }}>
+        Go to Login
+      </a>
+    </div>
+  );
+}
 
 const queryClient = new QueryClient();
 
-const App = () => {
-  // ✅ Get session + loading from AuthProvider
-  const { session, loading } = useAuth();
-
-  // ⏳ Prevent routing until Supabase finishes restoring session
-  if (loading) return <div className="p-6 text-center">Loading session...</div>;
-
+export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppProvider>
-        <TooltipProvider>
-          {/* ✅ Global Toaster for brand DNA success notifications */}
-          <Toaster />
-
-          <ErrorBoundary>
+      <AuthProvider>
+        <AppProvider>
+          <BrowserRouter>
             <Routes>
-              {/* ---------- Public Routes ---------- */}
-              <Route path="/" element={<Home />} />
-              <Route path="/signup" element={<SignUp />} />
+              {/* Public */}
               <Route path="/login" element={<Login />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/signed-out" element={<SignedOut />} />
 
-              {/* ---------- Auth Callback Routes ---------- */}
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/auth/update-password" element={<UpdatePassword />} />
-
-              {/* ---------- Protected Routes ---------- */}
+              {/* App */}
               <Route
-                path="/dashboard"
+                path="/"
                 element={
-                  <ProtectedRoute requireOnboarding>
+                  <ProtectedRoute>
                     <Dashboard />
                   </ProtectedRoute>
                 }
               />
+
+              {/* Meal Plans — requires Pro/Premium/Admin */}
               <Route
-                path="/dashboard/client-acquisition"
-                element={
-                  <ProtectedRoute requireOnboarding>
-                    <ClientAcquisitionDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/onboarding"
+                path="/meal-plans"
                 element={
                   <ProtectedRoute>
-                    <OnboardingQuiz />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/billing"
-                element={
-                  <ProtectedRoute requireOnboarding>
-                    <BillingPortal />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/landing-pages"
-                element={
-                  <ProtectedRoute requireOnboarding>
-                    <LandingPageBuilder />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/automation"
-                element={
-                  <ProtectedRoute requireOnboarding>
-                    <AutomationDashboard />
+                    <TierProtectedRoute>
+                      <MealPlans />
+                    </TierProtectedRoute>
                   </ProtectedRoute>
                 }
               />
 
-              {/* ---------- Admin Route ---------- */}
+              {/* Upgrade Page (shown to Free users) */}
               <Route
-                path="/admin"
+                path="/upgrade"
                 element={
-                  <AdminRoute>
-                    <AdminPanel />
-                  </AdminRoute>
+                  <ProtectedRoute>
+                    <Upgrade />
+                  </ProtectedRoute>
                 }
               />
 
-              {/* ---------- 404 Route ---------- */}
+              {/* 404 */}
               <Route path="*" element={<NotFound />} />
             </Routes>
-          </ErrorBoundary>
-        </TooltipProvider>
-      </AppProvider>
+          </BrowserRouter>
+        </AppProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
-};
+}
 
-export default App;
