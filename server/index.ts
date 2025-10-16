@@ -16,7 +16,7 @@ console.log("📦 Loading env from:", process.cwd());
 // ---------- EXPRESS ----------
 const app = express();
 
-// ✅ CORS fix
+// ✅ CORS
 app.use(
   cors({
     origin: "http://localhost:5173",
@@ -32,12 +32,12 @@ if (!process.env.STRIPE_SECRET_KEY) {
   process.exit(1);
 }
 
-// ✅ Initialize Stripe
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2024-06-20",
+// ✅ Initialize Stripe (fix: loosen apiVersion type)
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2024-06-20" as any, // ✅ avoid TS literal mismatch
 });
 
-/* ---------- ⚡ STRIPE WEBHOOK (MUST BE FIRST BEFORE express.json) ---------- */
+/* ---------- ⚡ STRIPE WEBHOOK ---------- */
 app.post(
   "/api/webhook",
   express.raw({ type: "application/json" }),
@@ -51,14 +51,12 @@ app.post(
     }
 
     try {
-      // ✅ Verify event with raw body
       const event = stripe.webhooks.constructEvent(
         req.body,
         sig as string,
         endpointSecret
       );
 
-      // ✅ Handle checkout completion
       if (event.type === "checkout.session.completed") {
         const session = event.data.object as any;
         const email = session.customer_email;
@@ -67,13 +65,11 @@ app.post(
         console.log("💥 Webhook received:", event.type);
         console.log(`➡️ Upgrading user with email ${email} to ${tier}`);
 
-        // ✅ Create Supabase admin client using service role key
         const supabase = createClient(
           process.env.SUPABASE_URL!,
           process.env.SUPABASE_SERVICE_ROLE_KEY!
         );
 
-        // ✅ Upsert (insert if missing, update if exists)
         const { error } = await supabase
           .from("coaches")
           .upsert({ email, role: tier }, { onConflict: "email" });
@@ -226,6 +222,5 @@ app.get("/api/hello", (_, res) =>
   res.json({ ok: true, msg: "hello from API" })
 );
 
-/* ---------- START SERVER ---------- */
-// ✅ Export the Express app for Vercel serverless runtime
+/* ---------- EXPORT ---------- */
 export default app;
