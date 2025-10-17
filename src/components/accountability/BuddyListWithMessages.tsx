@@ -1,127 +1,88 @@
-import { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useUser } from '@supabase/auth-helpers-react';
 import { supabase } from '@/lib/supabase';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { MessageCircle, Flame } from 'lucide-react';
-// import DirectMessages from './DirectMessages';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { getUnreadCount } from '@/lib/messages';
+import BuddyChat from './BuddyChat';
 
-export default function BuddyListWithMessages() {
-  const [buddies, setBuddies] = useState<any[]>([]);
-  const [selectedBuddy, setSelectedBuddy] = useState<any>(null);
+interface Buddy {
+  id: string;
+  buddy_id: string;
+  buddy_name: string;
+}
+
+const BuddyListWithMessages: React.FC = () => {
+  const user = useUser();
+  const [buddies, setBuddies] = useState<Buddy[]>([]);
+  const [selectedBuddy, setSelectedBuddy] = useState<Buddy | null>(null);
   const [unreadCounts, setUnreadCounts] = useState<Record<string, number>>({});
 
   useEffect(() => {
+    if (!user?.id) return;
+    const loadBuddies = async () => {
+      const { data } = await supabase
+        .from('accountability_buddies')
+        .select('*')
+        .or(`user_id.eq.${user.id},buddy_id.eq.${user.id}`);
+      setBuddies(data || []);
+    };
     loadBuddies();
-    const interval = setInterval(loadUnreadCounts, 5000);
-    return () => clearInterval(interval);
-  }, []);
+  }, [user?.id]);
 
-  const loadBuddies = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from('accountability_buddies')
-      .select(`
-        *,
-        buddy:buddy_id(id, email),
-        user:user_id(id, email)
-      `)
-      .or(`user_id.eq.${user.id},buddy_id.eq.${user.id}`)
-      .eq('status', 'accepted');
-
-    if (data) {
-      const buddyList = data.map(b => ({
-        id: b.user_id === user.id ? b.buddy_id : b.user_id,
-        email: b.user_id === user.id ? b.buddy?.email : b.user?.email,
-        streak: 0
-      }));
-      setBuddies(buddyList);
-      loadStreaks(buddyList);
-      loadUnreadCounts();
-    }
-  };
-
-  const loadStreaks = async (buddyList: any[]) => {
-    const streaks = await Promise.all(
-      buddyList.map(async (buddy) => {
-        const { data } = await supabase
-          .from('user_accountability')
-          .select('current_streak')
-          .eq('user_id', buddy.id)
-          .single();
-        return { ...buddy, streak: data?.current_streak || 0 };
-      })
-    );
-    setBuddies(streaks);
-  };
-
-  const loadUnreadCounts = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-
-    const { data } = await supabase
-      .from('buddy_messages')
-      .select('sender_id')
-      .eq('receiver_id', user.id)
-      .is('read_at', null);
-
-    if (data) {
+  useEffect(() => {
+    if (!user?.id) return;
+    const updateCounts = async () => {
       const counts: Record<string, number> = {};
-      data.forEach(msg => {
-        counts[msg.sender_id] = (counts[msg.sender_id] || 0) + 1;
-      });
+      for (const b of buddies) {
+        const buddyId = b.user_id === user.id ? b.buddy_id : b.user_id;
+        counts[buddyId] = await getUnreadCount(user.id, buddyId);
+      }
       setUnreadCounts(counts);
-    }
-  };
+    };
+    updateCounts();
+  }, [buddies, user?.id]);
 
   return (
-    <>
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {buddies.map((buddy) => (
-          <Card key={buddy.id} className="p-4">
-            <div className="flex justify-between items-start mb-3">
-              <div>
-                <h3 className="font-semibold">{buddy.email}</h3>
-                <div className="flex items-center gap-2 mt-1">
-                  <Flame className="w-4 h-4 text-orange-500" />
-                  <span className="text-sm text-gray-600">
-                    {buddy.streak} day streak
+    <div className="grid grid-cols-3 gap-4 h-full">
+      <div className="col-span-1 bg-muted rounded-2xl p-4 overflow-y-auto">
+        <h2 className="font-semibold mb-3">Your Buddies</h2>
+        <ul className="space-y-2">
+          {buddies.map((b) => {
+            const buddyId = b.user_id === user?.id ? b.buddy_id : b.user_id;
+            const buddyName = b.buddy_name || 'Buddy';
+            return (
+              <li
+                key={buddyId}
+                onClick={() => setSelectedBuddy(b)}
+                className={`flex justify-between items-center p-2 rounded-lg cursor-pointer hover:bg-accent ${
+                  selectedBuddy?.buddy_id === buddyId ? 'bg-accent' : ''
+                }`}
+              >
+                <span>{buddyName}</span>
+                {unreadCounts[buddyId] > 0 && (
+                  <span className="text-xs bg-red-500 text-white rounded-full px-2 py-0.5">
+                    {unreadCounts[buddyId]}
                   </span>
-                </div>
-              </div>
-              {unreadCounts[buddy.id] > 0 && (
-                <Badge variant="destructive">{unreadCounts[buddy.id]}</Badge>
-              )}
-            </div>
-            <Button onClick={() => setSelectedBuddy(buddy)} className="w-full">
-              <MessageCircle className="w-4 h-4 mr-2" />
-              Message
-            </Button>
-          </Card>
-        ))}
+                )}
+              </li>
+            );
+          })}
+        </ul>
       </div>
 
-      <Dialog open={!!selectedBuddy} onOpenChange={() => setSelectedBuddy(null)}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>
-              Messages with {selectedBuddy?.email || 'Buddy'}
-            </DialogTitle>
-          </DialogHeader>
-
-          {/* Temporarily commented out to avoid missing file errors */}
-          {/* <DirectMessages buddyId={selectedBuddy.id} buddyName={selectedBuddy.email} /> */}
-
-          {selectedBuddy && (
-            <div className="p-4 text-center text-gray-500 italic">
-              💬 Direct messages feature coming soon!
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </>
+      <div className="col-span-2">
+        {selectedBuddy ? (
+          <BuddyChat
+            buddyId={selectedBuddy.user_id === user?.id ? selectedBuddy.buddy_id : selectedBuddy.user_id}
+            buddyName={selectedBuddy.buddy_name}
+          />
+        ) : (
+          <div className="flex items-center justify-center h-full text-muted-foreground">
+            Select a buddy to start chatting
+          </div>
+        )}
+      </div>
+    </div>
   );
-}
+};
+
+export default BuddyListWithMessages;

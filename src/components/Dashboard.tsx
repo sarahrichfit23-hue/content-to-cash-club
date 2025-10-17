@@ -49,8 +49,8 @@ import PaymentUpdateModal from './PaymentUpdateModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import MonthlyContentPack from './MonthlyContentPack';
 import ClientAcquisitionDashboard from '@/pages/dashboard/ClientAcquisitionDashboard';
-import MealPlans from '@/pages/MealPlans';
-import UpgradeModal from '@/components/UpgradeModal'; // 💎 new modal import
+import MealPlanAssistant from '@/pages/MealPlanAssistant'; // ✅ NEW IMPORT
+import UpgradeModal from '@/components/UpgradeModal'; // 💎 existing modal
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
@@ -74,6 +74,7 @@ const Dashboard: React.FC = () => {
     | 'accountability'
     | 'clientacquisition'
     | 'strategy'
+    | 'mealplans'
   >('overview');
 
   const [contentTab, setContentTab] = useState<'current' | 'catalog' | 'favorites'>('current');
@@ -81,7 +82,7 @@ const Dashboard: React.FC = () => {
   const navigate = useNavigate();
   const { subscription, isInGracePeriod } = useSubscription(user?.id || '');
   const { toast } = useToast();
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false); // 💎 new modal state
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const stats = [
     { label: 'Assets Generated', value: '127', icon: <TrendingUp className="w-5 h-5" /> },
@@ -94,11 +95,10 @@ const Dashboard: React.FC = () => {
     <>
       <Navigation />
 
-      {/* ✅ RESTORED WRAPPERS */}
       <div className="min-h-screen bg-gray-50 pt-28">
         <div className="container mx-auto px-6 py-8">
 
-          {/* Header w/ Meal Plans + Upgrade button */}
+          {/* Header w/ Meal Plan Generator + Upgrade button */}
           <div className="mb-8">
             <div className="flex items-start justify-between gap-4">
               <div>
@@ -111,16 +111,16 @@ const Dashboard: React.FC = () => {
               </div>
 
               <div className="flex items-center gap-2">
-                {/* 🍽️ Meal Plans button */}
+                {/* 🍽️ Meal Plan Generator Button */}
                 <Button
-                  onClick={() => navigate('/meal-plans')}
+                  onClick={() => navigate('/meal-plan-assistant')}
                   className="bg-amber-600 hover:bg-amber-700 text-white"
-                  title="Create and view AI meal plans"
+                  title="Generate customized AI meal plans"
                 >
-                  🍽️ Meal Plans
+                  🍽️ Meal Plan Generator
                 </Button>
 
-                {/* 💎 Upgrade button (opens modal) */}
+                {/* 💎 Upgrade button (modal) */}
                 {profile?.role !== 'pro' && (
                   <>
                     <Button
@@ -130,7 +130,6 @@ const Dashboard: React.FC = () => {
                       💎 Upgrade
                     </Button>
 
-                    {/* Updated modal call with currentPlan awareness */}
                     {showUpgradeModal && (
                       <UpgradeModal
                         currentPlan={profile?.role || 'starter'}
@@ -241,8 +240,9 @@ const Dashboard: React.FC = () => {
                 <Palette className="w-4 h-4" /> White Label
               </TabsTrigger>
 
+              {/* ✅ Updated Tab for Meal Plan Generator */}
               <TabsTrigger value="mealplans" className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" /> Meal Plans
+                <Calendar className="w-4 h-4" /> Meal Plan Generator
               </TabsTrigger>
             </TabsList>
 
@@ -311,7 +311,9 @@ const Dashboard: React.FC = () => {
             <TabsContent value="workflows"><EmailWorkflowBuilder /></TabsContent>
             <TabsContent value="campaigns"><EmailCampaignBuilder /></TabsContent>
             <TabsContent value="whitelabel"><WhiteLabelDashboard /></TabsContent>
-            <TabsContent value="mealplans"><MealPlans /></TabsContent>
+
+            {/* ✅ Updated Meal Plan Tab Content */}
+            <TabsContent value="mealplans"><MealPlanAssistant /></TabsContent>
           </Tabs>
         </div>
       </div>

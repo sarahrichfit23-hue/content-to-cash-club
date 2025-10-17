@@ -6,12 +6,20 @@ export const TierProtectedRoute = ({ children }: { children: JSX.Element }) => {
 
   if (loading) return null;
 
+  // 🔐 If not logged in → send to login
   if (!user) return <Navigate to="/login" replace />;
 
-  if (role !== "pro" && role !== "premium" && role !== "admin") {
-    return <Navigate to="/upgrade" replace />;
+  // ✅ DEV BYPASS — Sarah always has access in dev
+  if (user.email === "sarahrichardson@Sarahs-MacBook-Pro" || role === "admin") {
+    return children;
   }
 
-  return children;
+  // ✅ Allowed roles (normal logic)
+  if (["pro", "premium", "admin"].includes(role)) {
+    return children;
+  }
+
+  // ❌ Everyone else → Upgrade Page
+  return <Navigate to="/upgrade" replace />;
 };
 

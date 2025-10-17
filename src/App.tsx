@@ -7,6 +7,7 @@ import { AppProvider } from "@/contexts/AppContext";
 
 import Dashboard from "@/components/Dashboard";
 import MealPlans from "@/pages/MealPlans";
+import MealPlanAssistant from "@/pages/MealPlanAssistant"; // ✅ NEW
 import Login from "@/components/auth/Login";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { TierProtectedRoute } from "@/components/TierProtectedRoute";
@@ -33,10 +34,10 @@ export default function App() {
         <AppProvider>
           <BrowserRouter>
             <Routes>
-              {/* Public */}
+              {/* 🔓 Public */}
               <Route path="/login" element={<Login />} />
 
-              {/* App */}
+              {/* 🧠 Main Dashboard */}
               <Route
                 path="/"
                 element={
@@ -46,7 +47,7 @@ export default function App() {
                 }
               />
 
-              {/* Meal Plans — requires Pro/Premium/Admin */}
+              {/* 🧾 Meal Plans (legacy) — requires Pro/Premium/Admin */}
               <Route
                 path="/meal-plans"
                 element={
@@ -58,7 +59,19 @@ export default function App() {
                 }
               />
 
-              {/* Upgrade Page (shown to Free users) */}
+              {/* ⚡ NEW: AI Meal Plan Generator Assistant */}
+              <Route
+                path="/meal-plan-assistant"
+                element={
+                  <ProtectedRoute>
+                    <TierProtectedRoute>
+                      <MealPlanAssistant />
+                    </TierProtectedRoute>
+                  </ProtectedRoute>
+                }
+              />
+
+              {/* 💳 Upgrade Page */}
               <Route
                 path="/upgrade"
                 element={
@@ -68,7 +81,7 @@ export default function App() {
                 }
               />
 
-              {/* 404 */}
+              {/* 🚫 404 Fallback */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
@@ -77,4 +90,3 @@ export default function App() {
     </QueryClientProvider>
   );
 }
-

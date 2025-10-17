@@ -158,6 +158,11 @@ if (error) {
           <LeaderboardSettings />
         </Card>
       </div>
+      
+      <Card className="p-6">
+  <Leaderboard />
+</Card>
+
 
       <Card className="p-6">
         <div className="flex items-center justify-between mb-4">
