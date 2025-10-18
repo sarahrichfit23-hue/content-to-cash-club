@@ -1,623 +1,668 @@
-console.log("Card:", Card, "CardHeader:", CardHeader, "CardContent:", CardContent);
-console.log("Tabs:", Tabs, "TabsList:", TabsList, "TabsTrigger:", TabsTrigger, "TabsContent:", TabsContent);
-import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardHeader, CardContent } from "../components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
-import { Loader2 } from "lucide-react";
-import ReactToPrint from "react-to-print";
+import jsPDF from "jspdf";
+import React, { useState, useEffect } from "react";
 
-const AI_PLAN_ENDPOINT = "/api/generate-plan";
-
-type MealPlanResponse = {
-  summary: string;
-  days_plan: any[];
-  shopping_list: { qty: string; unit: string; item: string }[];
-  recipes: { title: string; ingredients: string[]; instructions: string }[];
-};
-
-const activityMultiplier: Record<string, number> = {
-  sedentary: 1.2,
-  light: 1.375,
-  moderate: 1.55,
-  active: 1.725,
-  very_active: 1.9,
-};
-
-const goalAdjustments: Record<string, number> = {
-  fat_loss: 0.85,
-  maintenance: 1,
-  muscle_gain: 1.15,
-};
-
-const macroPresets = {
-  fat_loss: { protein: 40, carbs: 30, fat: 30, desc: "Lean & efficient — high protein to preserve muscle." },
-  maintenance: { protein: 35, carbs: 40, fat: 25, desc: "Balanced macros for steady energy and consistency." },
-  muscle_gain: { protein: 30, carbs: 45, fat: 25, desc: "Fuel growth — more carbs for recovery and training." },
-};
-
-const funMessages = [
-  "🍳 Cooking up your personalized plan...",
-  "🥦 Balancing your macros and goals...",
-  "🔥 Grilling those calories to perfection...",
-  "🧂 Sprinkling motivation on your meals...",
-  "🥕 Chopping data and veggies alike...",
+// ====== CONSTANTS ======
+const GENDERS = ["Female", "Male", "Non-binary", "Prefer not to say"];
+const ACTIVITY_LEVELS = [
+  { value: "sedentary", label: "Sedentary (little or no exercise)", factor: 1.2 },
+  { value: "lightly active", label: "Lightly active (light exercise 1-3 days/week)", factor: 1.375 },
+  { value: "moderately active", label: "Moderately active (moderate exercise 3-5 days/week)", factor: 1.55 },
+  { value: "very active", label: "Very active (hard exercise 6-7 days/week)", factor: 1.725 },
+  { value: "extra active", label: "Extra active (very hard exercise & physical job)", factor: 1.9 }
 ];
+const GOALS = [
+  { value: "lose fat", label: "Lose Fat", adjust: -500 },
+  { value: "gain muscle", label: "Gain Muscle", adjust: 250 },
+  { value: "maintain weight", label: "Maintain Weight", adjust: 0 },
+  { value: "lose fat, gain muscle", label: "Lose Fat & Gain Muscle", adjust: -250 }
+];
+const DIET_STYLES = [
+  "balanced",
+  "low carb",
+  "high protein",
+  "vegetarian",
+  "vegan",
+  "paleo",
+  "keto",
+  "mediterranean"
+];
+const MACRO_SUGGESTIONS = {
+  "lose fat":       { protein: 40, carbs: 30, fat: 30 },
+  "gain muscle":    { protein: 30, carbs: 50, fat: 20 },
+  "maintain weight":{ protein: 30, carbs: 40, fat: 30 },
+  "lose fat, gain muscle": { protein: 35, carbs: 35, fat: 30 }
+};
+const CALORIES_PER_GRAM = { protein: 4, carbs: 4, fat: 9 };
+const SHOPPING_CATS = ["Pantry", "Produce", "Dairy & Eggs", "Protein"];
 
-const StepClient = React.memo(function StepClient({ client, setClient, setStep, setNutrition }) {
-  const handleClientChange = useCallback(
-    (field, value) => setClient((prev) => ({ ...prev, [field]: value })),
-    [setClient]
-  );
+// ====== HELPERS ======
+function calculateCalories({ gender, age, height, weight, activity, goal }) {
+  if (!gender || !age || !height || !weight || !activity || !goal) return "";
+  const weightKg = Number(weight) * 0.453592;
+  const heightCm = Number(height) * 2.54;
+  let bmr;
+  if (gender === "Female") {
+    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age - 161;
+  } else if (gender === "Male") {
+    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age + 5;
+  } else {
+    bmr = 10 * weightKg + 6.25 * heightCm - 5 * age;
+  }
+  const activityObj = ACTIVITY_LEVELS.find(a => a.value === activity);
+  const activityFactor = activityObj ? activityObj.factor : 1.2;
+  let goalAdjust = 0;
+  if (goal === "lose fat") goalAdjust = -500;
+  else if (goal === "gain muscle") goalAdjust = 250;
+  else if (goal === "lose fat, gain muscle") goalAdjust = -250;
+  let tdee = bmr * activityFactor + goalAdjust;
+  if (gender === "Female" && tdee < 1200) tdee = 1200;
+  if (gender === "Male" && tdee < 1500) tdee = 1500;
+  return Math.round(tdee);
+}
 
+function calculateMacrosGramsAndCals(totalCals, macros) {
+  let proteinGrams = ((macros.protein / 100) * totalCals) / CALORIES_PER_GRAM.protein;
+  let carbsGrams = ((macros.carbs / 100) * totalCals) / CALORIES_PER_GRAM.carbs;
+  let fatGrams = ((macros.fat / 100) * totalCals) / CALORIES_PER_GRAM.fat;
+  return {
+    protein: Math.round(proteinGrams),
+    carbs: Math.round(carbsGrams),
+    fat: Math.round(fatGrams),
+    proteinCals: macros.protein / 100 * totalCals,
+    carbsCals: macros.carbs / 100 * totalCals,
+    fatCals: macros.fat / 100 * totalCals
+  };
+}
+
+// ====== COMPONENTS ======
+function ShoppingList({ shopping, checklist, setChecklist }) {
+  if (!shopping) return null;
   return (
-    <Card className="p-6 shadow-sm bg-white rounded-xl">
-      <CardHeader>
-        <h2 className="text-xl font-semibold">Client Info</h2>
-      </CardHeader>
-      <CardContent className="grid gap-4">
-        <div>
-          <Label>Client Name (optional)</Label>
-          <Input
-            value={client.name}
-            onChange={(e) => handleClientChange("name", e.target.value)}
-            placeholder="Leave blank for general plan"
-          />
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label>Gender</Label>
-            <Select
-              value={client.gender}
-              onValueChange={(v) => handleClientChange("gender", v)}
-            >
-              <SelectTrigger className="bg-gray-50 text-gray-800">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="female">Female</SelectItem>
-                <SelectItem value="male">Male</SelectItem>
-              </SelectContent>
-            </Select>
+    <div>
+      {SHOPPING_CATS.map(cat =>
+        Array.isArray(shopping[cat]) && shopping[cat].length > 0 ? (
+          <div key={cat} className="mb-5">
+            <h4 className="text-gold-700 font-semibold">{cat}</h4>
+            <ul className="list-none pl-0">
+              {shopping[cat].map((item, idx) => (
+                <li key={cat + idx} className="mb-1">
+                  <label className="cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={!!checklist[cat]?.[idx]}
+                      onChange={() => {
+                        setChecklist(prev => ({
+                          ...prev,
+                          [cat]: {
+                            ...(prev[cat] || {}),
+                            [idx]: !prev[cat]?.[idx]
+                          }
+                        }));
+                      }}
+                      className="mr-2"
+                    />
+                    {item.qty ? `${item.qty} ` : ""}
+                    {item.unit && !item.qty?.includes(item.unit) ? `${item.unit} ` : ""}
+                    {item.item}
+                  </label>
+                </li>
+              ))}
+            </ul>
           </div>
-          <div>
-            <Label>Age</Label>
-            <Input
-              type="number"
-              value={client.age}
-              onChange={(e) =>
-                handleClientChange("age", Number(e.target.value))
-              }
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <Label>Height (inches)</Label>
-            <Input
-              type="number"
-              value={client.height}
-              onChange={(e) =>
-                handleClientChange("height", Number(e.target.value))
-              }
-            />
-          </div>
-          <div>
-            <Label>Weight (lbs)</Label>
-            <Input
-              type="number"
-              value={client.weight}
-              onChange={(e) =>
-                handleClientChange("weight", Number(e.target.value))
-              }
-            />
-          </div>
-        </div>
-
-        <div>
-          <Label>Activity Level</Label>
-          <Select
-            value={client.activity}
-            onValueChange={(v) => handleClientChange("activity", v)}
-          >
-            <SelectTrigger className="bg-gray-50 text-gray-800">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="sedentary">Sedentary</SelectItem>
-              <SelectItem value="light">Light (1–2x/week)</SelectItem>
-              <SelectItem value="moderate">Moderate (3–4x/week)</SelectItem>
-              <SelectItem value="active">Active (5–6x/week)</SelectItem>
-              <SelectItem value="very_active">Very Active (daily)</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label>Goal</Label>
-          <Select
-            value={client.goal}
-            onValueChange={(v) => {
-              handleClientChange("goal", v);
-              setNutrition((n) => ({ ...n, ...macroPresets[v], mode: "auto" }));
-            }}
-          >
-            <SelectTrigger className="bg-gray-50 text-gray-800">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="fat_loss">Fat Loss</SelectItem>
-              <SelectItem value="maintenance">Maintenance</SelectItem>
-              <SelectItem value="muscle_gain">Muscle Gain</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="flex justify-between mt-4">
-          <span />
-          <Button
-            onClick={() => setStep(2)}
-          >
-            Next
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
-
-const StepNutrition = React.memo(function StepNutrition({ nutrition, setNutrition, setStep }) {
-  const totalMacros = nutrition.protein + nutrition.carbs + nutrition.fat;
-
-  return (
-    <Card className="p-6 bg-white rounded-xl shadow-sm">
-      <CardHeader>
-        <h2 className="text-xl font-semibold">Nutrition Overview</h2>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="mb-2 text-gray-700">
-          Estimated Calories:{" "}
-          <strong className="text-yellow-700">{nutrition.kcal} kcal/day</strong>
-        </p>
-
-        <div className="flex justify-between items-center mb-2">
-          <Label>Macro Mode</Label>
-          <Button
-            variant="outline"
-            className="bg-gray-100 text-gray-800 hover:bg-gray-200"
-            onClick={() =>
-              setNutrition((n) => ({
-                ...n,
-                mode: n.mode === "auto" ? "manual" : "auto",
-              }))
-            }
-          >
-            {nutrition.mode === "auto" ? "Switch to Manual" : "Use Auto Presets"}
-          </Button>
-        </div>
-
-        {nutrition.mode === "manual" ? (
-          <>
-            <div>
-              <Label>Protein: {nutrition.protein}%</Label>
-              <Slider
-                min={10}
-                max={70}
-                step={1}
-                value={[nutrition.protein]}
-                onValueChange={([v]) => setNutrition((n) => ({ ...n, protein: v }))}
-              />
-            </div>
-            <div>
-              <Label>Carbs: {nutrition.carbs}%</Label>
-              <Slider
-                min={10}
-                max={70}
-                step={1}
-                value={[nutrition.carbs]}
-                onValueChange={([v]) => setNutrition((n) => ({ ...n, carbs: v }))}
-              />
-            </div>
-            <div>
-              <Label>Fats: {nutrition.fat}%</Label>
-              <Slider
-                min={10}
-                max={70}
-                step={1}
-                value={[nutrition.fat]}
-                onValueChange={([v]) => setNutrition((n) => ({ ...n, fat: v }))}
-              />
-            </div>
-            <p className="text-xs text-gray-500 italic">
-              Ensure total ≈ 100% (currently {totalMacros}%)
-            </p>
-          </>
-        ) : (
-          <p className="text-sm italic text-gray-600">{nutrition.desc}</p>
-        )}
-
-        <div className="flex justify-between mt-6">
-          <Button variant="outline" className="bg-gray-100 text-gray-800 hover:bg-gray-200" onClick={() => setStep(1)}>
-            Back
-          </Button>
-          <Button onClick={() => setStep(3)}>Next</Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-});
-
-const AiLoadingModal = React.memo(function AiLoadingModal({ aiMessage }) {
-  return (
-    <div className="fixed inset-0 bg-black/60 flex flex-col items-center justify-center z-50">
-      <div className="bg-white p-8 rounded-2xl shadow-lg text-center">
-        <Loader2 className="w-10 h-10 text-yellow-600 animate-spin mx-auto mb-3" />
-        <h2 className="text-lg font-semibold mb-2">Generating your meal plan...</h2>
-        <p className="text-sm text-gray-600 italic mb-4">{aiMessage}</p>
-        <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden mx-auto">
-          <div className="h-2 bg-gradient-to-r from-yellow-500 to-orange-500 animate-progress" />
-        </div>
-      </div>
+        ) : null
+      )}
     </div>
   );
-});
+}
 
-const StepResults = React.memo(function StepResults({ plan, setStep }) {
-  const resultsRef = useRef<HTMLDivElement>(null);
-
+function RecipePack({ recipes }) {
+  if (!Array.isArray(recipes) || recipes.length === 0) return null;
   return (
-    <Card className="p-6 bg-white rounded-xl shadow-sm">
-      <CardHeader>
-        <h2 className="text-xl font-semibold">Your AI Meal Plan</h2>
-      </CardHeader>
-      <CardContent>
-        <div ref={resultsRef}>
-          {!plan ? (
-            <p className="text-gray-500">No plan generated yet.</p>
-          ) : (
-            <>
-              <Tabs defaultValue="plan">
-                <TabsList className="mb-4">
-                  <TabsTrigger value="plan">🗓 Plan</TabsTrigger>
-                  <TabsTrigger value="shopping">🛒 Shopping</TabsTrigger>
-                  <TabsTrigger value="recipes">📖 Recipes</TabsTrigger>
-                  <TabsTrigger value="summary">💬 Summary</TabsTrigger>
-                </TabsList>
-
-                <TabsContent value="plan">
-                  {plan.days_plan.map((day, i) => (
-                    <div key={i} className="mb-4 border rounded-lg p-4 bg-gray-50">
-                      <h3 className="font-semibold mb-2">{day.date || `Day ${i + 1}`}</h3>
-                      <ul className="space-y-1 text-sm">
-                        {day.meals?.map((m: any, j: number) => (
-                          <li key={j}>
-                            <strong>{m.meal_type}:</strong> {m.title} ({m.kcal} kcal)
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </TabsContent>
-
-                <TabsContent value="shopping">
-                  <ul className="space-y-1 text-sm">
-                    {plan.shopping_list?.map((item, i) => (
-                      <li key={i}>{item.qty} {item.unit} {item.item}</li>
-                    ))}
-                  </ul>
-                </TabsContent>
-
-                <TabsContent value="recipes">
-                  {plan.recipes?.map((r, i) => (
-                    <div key={i} className="mb-4 border rounded-lg p-4 bg-gray-50">
-                      <h3 className="font-semibold mb-2">{r.title}</h3>
-                      <p className="text-sm font-medium">Ingredients:</p>
-                      <ul className="text-sm list-disc ml-5 mb-2">
-                        {r.ingredients.map((ing, j) => (
-                          <li key={j}>{ing}</li>
-                        ))}
-                      </ul>
-                      <p className="text-sm font-medium">Instructions:</p>
-                      <p className="text-sm">{r.instructions}</p>
-                    </div>
-                  ))}
-                </TabsContent>
-
-                <TabsContent value="summary">
-                  <p className="text-sm leading-relaxed">{plan.summary}</p>
-                </TabsContent>
-              </Tabs>
-            </>
+    <div>
+      {recipes.map((rec, idx) => (
+        <div key={idx} className="mb-8">
+          <h4 className="mb-1 text-lg font-bold text-gray-900">{rec.title}</h4>
+          {rec["Used in"] && (
+            <div className="text-sm text-gold-700 mb-1">
+              <b>Appears in:</b> {rec["Used in"]}
+            </div>
           )}
+          <b>Ingredients:</b>
+          <ul className="mb-2">
+            {Array.isArray(rec.ingredients) && rec.ingredients.map((ing, i) => <li key={i}>{ing}</li>)}
+          </ul>
+          <b>Instructions:</b>
+          <ol className="ml-5 list-decimal">
+            {Array.isArray(rec.instructions)
+              ? rec.instructions.map((step, sidx) => (
+                  <li key={sidx}>{step.trim()}</li>
+                ))
+              : typeof rec.instructions === "string"
+                ? rec.instructions.split(/\d+\./).filter(Boolean).map((step, sidx) =>
+                    <li key={sidx}>{step.trim()}</li>
+                  )
+                : <li>No instructions provided.</li>
+            }
+          </ol>
         </div>
-        <div className="flex gap-4 mt-6">
-          <ReactToPrint
-            trigger={() => (
-              <Button
-                className="bg-yellow-600 hover:bg-yellow-700 text-white"
-              >
-                📄 Download / Print PDF
-              </Button>
-            )}
-            content={() => resultsRef.current}
-            documentTitle="Meal Plan"
-          />
-          <Button variant="outline" className="bg-gray-100 text-gray-800 hover:bg-gray-200" onClick={() => setStep(1)}>
-            🔁 Start Over
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
+      ))}
+    </div>
   );
-});
+}
 
+function DaysMealPlan({ days_plan }) {
+  if (!Array.isArray(days_plan) || days_plan.length === 0) {
+    return <div className="text-gray-400">No meal plan days found yet.</div>;
+  }
+  return (
+    <div>
+      {days_plan.map((day, idx) => (
+        <div key={idx} className="mb-6">
+          <h3 className="mb-1 text-base font-semibold text-gray-900">
+            {day?.date || `Day ${day.day || idx + 1}`}
+          </h3>
+          <table className="w-full border-collapse mb-2 text-sm">
+            <thead>
+              <tr className="bg-yellow-100">
+                <th className="py-2 px-3 border-b border-gold-200">Meal</th>
+                <th className="py-2 px-3 border-b border-gold-200">Dish</th>
+                <th className="py-2 px-3 border-b border-gold-200">Calories</th>
+              </tr>
+            </thead>
+            <tbody>
+              {/* Support both v1 (meals array) and v2 (breakfast/lunch/dinner/snack keys) */}
+              {Array.isArray(day.meals) && day.meals.length > 0
+                ? day.meals.map((meal, mi) => (
+                    <tr key={mi}>
+                      <td className="py-2 px-3 border-b border-gray-100">{meal.meal_type}</td>
+                      <td className="py-2 px-3 border-b border-gray-100">{meal.title}</td>
+                      <td className="py-2 px-3 border-b border-gray-100">{meal.kcal || ""}</td>
+                    </tr>
+                  ))
+                : ["breakfast", "lunch", "dinner", "snack"].map(mealType =>
+                    day[mealType] ? (
+                      <tr key={mealType}>
+                        <td className="py-2 px-3 border-b border-gray-100">
+                          {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
+                        </td>
+                        <td className="py-2 px-3 border-b border-gray-100">{day[mealType]}</td>
+                        <td className="py-2 px-3 border-b border-gray-100"></td>
+                      </tr>
+                    ) : null
+                  )
+              }
+            </tbody>
+          </table>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WeeksPlan({ weeks }) {
+  const [openWeek, setOpenWeek] = useState(0);
+  const [allChecklist, setAllChecklist] = useState({});
+  if (!Array.isArray(weeks) || weeks.length === 0) return null;
+  return (
+    <div>
+      <div className="flex gap-3 mb-5">
+        {weeks.map((week, idx) => (
+          <button
+            key={idx}
+            onClick={e => {e.preventDefault(); setOpenWeek(idx);}}
+            className={`px-4 py-2 rounded-lg font-semibold border ${
+              openWeek === idx ? "bg-yellow-400 border-yellow-400" : "bg-yellow-100 border-yellow-400"
+            }`}
+          >
+            Week {week.week}
+          </button>
+        ))}
+      </div>
+      <section className="mb-10">
+        <h2 className="text-gold-700 text-xl font-bold mb-2">Meal Plan - Week {weeks[openWeek]?.week}</h2>
+        <DaysMealPlan days_plan={weeks[openWeek]?.days_plan} />
+      </section>
+      <section className="bg-yellow-50 p-6 rounded-xl mb-8 border border-yellow-200">
+        <h2 className="text-gold-700 text-xl font-bold mb-2">Shopping List - Week {weeks[openWeek]?.week}</h2>
+        <ShoppingList
+          shopping={weeks[openWeek]?.shopping_list}
+          checklist={allChecklist[openWeek] || {}}
+          setChecklist={c => setAllChecklist(prev => ({...prev, [openWeek]: c}))}
+        />
+      </section>
+      <section className="bg-yellow-50 p-6 rounded-xl border border-yellow-200">
+        <h2 className="text-gold-700 text-xl font-bold mb-2">Recipe Pack - Week {weeks[openWeek]?.week}</h2>
+        <RecipePack recipes={weeks[openWeek]?.recipes} />
+      </section>
+    </div>
+  );
+}
+
+function SingleWeekPlan({ plan }) {
+  const [checklist, setChecklist] = useState({});
+  return (
+    <div>
+      <section className="mb-10">
+        <h2 className="text-gold-700 text-xl font-bold mb-2">Meal Plan</h2>
+        <DaysMealPlan days_plan={plan?.days_plan} />
+      </section>
+      <section className="bg-yellow-50 p-6 rounded-xl mb-8 border border-yellow-200">
+        <h2 className="text-gold-700 text-xl font-bold mb-2">Shopping List</h2>
+        <ShoppingList
+          shopping={plan?.shopping_list}
+          checklist={checklist}
+          setChecklist={setChecklist}
+        />
+      </section>
+      <section className="bg-yellow-50 p-6 rounded-xl border border-yellow-200">
+        <h2 className="text-gold-700 text-xl font-bold mb-2">Recipe Pack</h2>
+        <RecipePack recipes={plan?.recipes} />
+      </section>
+    </div>
+  );
+}
+
+// ====== MAIN PAGE: MealPlanAssistant ======
 export default function MealPlanAssistant() {
-  const [step, setStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [aiMessage, setAiMessage] = useState(funMessages[0]);
-  const [plan, setPlan] = useState<MealPlanResponse | null>(null);
-
-  const [client, setClient] = useState({
-    name: "",
-    age: 30,
-    gender: "female",
-    height: 65,
-    weight: 150,
-    activity: "moderate",
-    goal: "fat_loss",
-  });
-
-  const [preferences, setPreferences] = useState({
-    dietStyle: "Balanced",
-    restrictions: [] as string[],
+  const [form, setForm] = useState({
+    client_name: "",
+    gender: "",
+    age: "",
+    height: "",
+    weight: "",
+    activity: "",
+    goal: "",
+    diet_style: "",
+    restrictions: "",
+    target_kcal: "",
+    macros: { protein: "", carbs: "", fat: "" },
     notes: "",
     days: 7,
   });
-
-  const [nutrition, setNutrition] = useState({
-    kcal: 0,
-    protein: 40,
-    carbs: 30,
-    fat: 30,
-    desc: macroPresets["fat_loss"].desc,
-    mode: "auto",
-  });
-
-  // calculateBMR and calculateTargets are stable
-  const calculateBMR = useCallback((gender: string, weight: number, height: number, age: number) => {
-    const w = weight * 0.453592;
-    const h = height * 2.54;
-    if (gender === "female") return 10 * w + 6.25 * h - 5 * age - 161;
-    return 10 * w + 6.25 * h - 5 * age + 5;
-  }, []);
-
-  const calculateTargets = useCallback(() => {
-    const bmr = calculateBMR(
-      client.gender,
-      client.weight,
-      client.height,
-      client.age
-    );
-    const tdee = bmr * activityMultiplier[client.activity];
-    const adjusted = tdee * goalAdjustments[client.goal];
-    setNutrition((n) => ({ ...n, kcal: Math.round(adjusted) }));
-  }, [client, calculateBMR]);
-
-  // Only recalculate when client changes and on entry to nutrition step
-  useEffect(() => {
-    if (step === 2) {
-      calculateTargets();
-    }
-  }, [step, calculateTargets]);
+  const [plan, setPlan] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [macrosEdited, setMacrosEdited] = useState(false);
+  const [manualCals, setManualCals] = useState(false);
 
   useEffect(() => {
-    if (loading) {
-      let i = 0;
-      const interval = setInterval(() => {
-        setAiMessage(funMessages[i % funMessages.length]);
-        i++;
-      }, 2000);
-      return () => clearInterval(interval);
+    if (!manualCals) {
+      const autoCals = calculateCalories(form);
+      setForm(prev => ({
+        ...prev,
+        target_kcal: autoCals
+      }));
     }
-  }, [loading]);
+    // eslint-disable-next-line
+  }, [form.gender, form.age, form.height, form.weight, form.activity, form.goal]);
 
-  const handleGeneratePlan = async () => {
+  const handleChange = e => {
+    const { name, value } = e.target;
+    if (name === "goal") {
+      const macros = MACRO_SUGGESTIONS[value] || { protein: "", carbs: "", fat: "" };
+      setForm(prev => ({
+        ...prev,
+        goal: value,
+        macros: { ...macros }
+      }));
+      setMacrosEdited(false);
+      setManualCals(false);
+      return;
+    }
+    if (["protein", "carbs", "fat"].includes(name)) {
+      setForm(prev => ({
+        ...prev,
+        macros: { ...prev.macros, [name]: value }
+      }));
+      setMacrosEdited(true);
+    } else if (name === "target_kcal") {
+      setManualCals(true);
+      setForm(prev => ({
+        ...prev,
+        target_kcal: value
+      }));
+    } else if (name === "days") {
+      setForm(prev => ({
+        ...prev,
+        days: Number(value)
+      }));
+    } else {
+      setForm(prev => ({
+        ...prev,
+        [name]: value
+      }));
+      if (["gender","age","height","weight","activity","goal"].includes(name)) {
+        setManualCals(false);
+      }
+    }
+  };
+
+  const handleSubmit = async e => {
+    e.preventDefault();
     setLoading(true);
+    setError("");
     setPlan(null);
 
     try {
-      const res = await fetch(AI_PLAN_ENDPOINT, {
+      const payload = {
+        ...form,
+        days: Number(form.days), // ENSURE days is a number!
+        restrictions: form.restrictions.split(",").map(s => s.trim()).filter(Boolean),
+        macros: {
+          protein: form.macros.protein,
+          carbs: form.macros.carbs,
+          fat: form.macros.fat,
+        },
+      };
+
+      console.log("Sending payload:", payload); // helpful log for debugging
+
+      const res = await fetch("http://localhost:3001/api/generate-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          client_name: client.name || "Client",
-          diet_style: preferences.dietStyle,
-          target_kcal: nutrition.kcal,
-          macros: {
-            protein: nutrition.protein,
-            carbs: nutrition.carbs,
-            fat: nutrition.fat,
-          },
-          days: preferences.days,
-          notes: preferences.notes,
-        }),
+        body: JSON.stringify(payload),
       });
 
-      if (!res.ok) throw new Error("Backend unavailable");
-      const data = (await res.json()) as MealPlanResponse;
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || "Unknown error");
+      }
+
+      const data = await res.json();
       setPlan(data);
-      setStep(5);
-    } catch {
-      // Fallback demo plan (no backend)
-      setPlan({
-        summary: "Demo plan loaded successfully! (backend offline)",
-        days_plan: [
-          {
-            date: "Day 1",
-            meals: [
-              { meal_type: "Breakfast", title: "Oatmeal with Berries", kcal: 350 },
-              { meal_type: "Lunch", title: "Grilled Chicken Salad", kcal: 500 },
-              { meal_type: "Dinner", title: "Salmon with Quinoa", kcal: 600 },
-            ],
-          },
-        ],
-        shopping_list: [
-          { qty: "1 lb", unit: "chicken breast", item: "" },
-          { qty: "1 cup", unit: "quinoa", item: "" },
-          { qty: "2", unit: "lemons", item: "" },
-        ],
-        recipes: [
-          {
-            title: "Grilled Chicken Salad",
-            ingredients: ["chicken breast", "mixed greens", "olive oil", "lemon juice"],
-            instructions: "Grill chicken and serve on greens with olive oil and lemon.",
-          },
-        ],
-      });
-      setStep(5);
+    } catch (err) {
+      setError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
-  const stepContent = useMemo(() => {
-    if (step === 1)
-      return (
-        <StepClient
-          client={client}
-          setClient={setClient}
-          setStep={setStep}
-          setNutrition={setNutrition}
-        />
-      );
-    if (step === 2)
-      return (
-        <StepNutrition
-          nutrition={nutrition}
-          setNutrition={setNutrition}
-          setStep={setStep}
-        />
-      );
-    if (step === 3)
-      return (
-        <Card className="p-6 bg-white rounded-xl shadow-sm">
-          <CardHeader>
-            <h2 className="text-xl font-semibold">Meal Preferences</h2>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <Label>Diet Style</Label>
-              <Select
-                value={preferences.dietStyle}
-                onValueChange={(v) => setPreferences({ ...preferences, dietStyle: v })}
-              >
-                <SelectTrigger className="bg-gray-50 text-gray-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Balanced">Balanced</SelectItem>
-                  <SelectItem value="High Protein">High Protein</SelectItem>
-                  <SelectItem value="Low Carb">Low Carb</SelectItem>
-                  <SelectItem value="Mediterranean">Mediterranean</SelectItem>
-                  <SelectItem value="Plant-Based">Plant-Based</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+  const macros = {
+    protein: Number(form.macros.protein) || 0,
+    carbs: Number(form.macros.carbs) || 0,
+    fat: Number(form.macros.fat) || 0,
+  };
+  const totalCals = Number(form.target_kcal) || 0;
+  const macrosInfo = calculateMacrosGramsAndCals(totalCals, macros);
 
-            <div>
-              <Label>Dietary Restrictions</Label>
-              <Select
-                onValueChange={(v) =>
-                  setPreferences((p) => ({
-                    ...p,
-                    restrictions: p.restrictions.includes(v)
-                      ? p.restrictions
-                      : [...p.restrictions, v],
-                  }))
-                }
-              >
-                <SelectTrigger className="bg-gray-50 text-gray-800">
-                  <SelectValue placeholder="Select restriction" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="Gluten-Free">Gluten-Free</SelectItem>
-                  <SelectItem value="Dairy-Free">Dairy-Free</SelectItem>
-                  <SelectItem value="Nut-Free">Nut-Free</SelectItem>
-                  <SelectItem value="Soy-Free">Soy-Free</SelectItem>
-                  <SelectItem value="Vegetarian">Vegetarian</SelectItem>
-                </SelectContent>
-              </Select>
-              <p className="text-sm mt-2 text-gray-600">
-                {preferences.restrictions.join(", ") || "None selected"}
-              </p>
-            </div>
+  const macroSuggestionText = form.goal && MACRO_SUGGESTIONS[form.goal]
+    ? `Suggested macros for '${form.goal}': Protein ${MACRO_SUGGESTIONS[form.goal].protein}%, Carbs ${MACRO_SUGGESTIONS[form.goal].carbs}%, Fat ${MACRO_SUGGESTIONS[form.goal].fat}%`
+    : "";
+function downloadPlanAsPDF() {
+  if (!plan) return;
+  const doc = new jsPDF();
+  let y = 10;
+  doc.setFontSize(16);
+  doc.text("Meal Plan Summary", 10, y);
+  y += 8;
 
-            <div>
-              <Label>Notes (optional)</Label>
-              <textarea
-                className="w-full border rounded-lg p-2"
-                rows={3}
-                value={preferences.notes}
-                onChange={(e) => setPreferences({ ...preferences, notes: e.target.value })}
-              />
-            </div>
+  doc.setFontSize(12);
+  doc.text(plan.summary || "No summary", 10, y);
+  y += 12;
 
-            <div>
-              <Label>Plan Duration</Label>
-              <Select
-                value={String(preferences.days)}
-                onValueChange={(v) => setPreferences({ ...preferences, days: Number(v) })}
-              >
-                <SelectTrigger className="bg-gray-50 text-gray-800">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="7">7 Days</SelectItem>
-                  <SelectItem value="14">14 Days</SelectItem>
-                  <SelectItem value="21">21 Days</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+  (plan.days_plan || []).forEach((day, idx) => {
+    doc.setFontSize(14);
+    doc.text(day.date || `Day ${day.day || idx + 1}`, 10, y);
+    y += 8;
+    doc.setFontSize(12);
+    ["breakfast", "lunch", "dinner", "snack"].forEach(mealType => {
+      if (day[mealType]) {
+        doc.text(
+          `${mealType.charAt(0).toUpperCase() + mealType.slice(1)}: ${day[mealType]}`,
+          12,
+          y
+        );
+        y += 7;
+      }
+    });
+    y += 4;
+    if (y > 270) { doc.addPage(); y = 10; }
+  });
 
-            <div className="flex justify-between pt-4">
-              <Button variant="outline" className="bg-gray-100 text-gray-800 hover:bg-gray-200" onClick={() => setStep(2)}>
-                Back
-              </Button>
-              <Button
-                className="bg-gradient-to-r from-yellow-600 to-yellow-500 text-white"
-                onClick={handleGeneratePlan}
-              >
-                Generate Plan
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      );
-    if (step === 5)
-      return <StepResults plan={plan} setStep={setStep} />;
-    return null;
-  }, [step, client, nutrition, preferences, plan, setNutrition, setStep]);
-
+  doc.save("meal-plan.pdf");
+}
   return (
-    <div className="p-6 max-w-3xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold text-gray-900">🧠 Meal Plan Generator</h1>
-      <p className="text-gray-600 mb-6">
+    <div className="max-w-4xl mx-auto py-12 px-4">
+      <h1 className="text-3xl font-extrabold text-gray-900 mb-2 flex items-center gap-2">
+        <span role="img" aria-label="brain">🧠</span> Meal Plan Generator
+      </h1>
+      <p className="text-lg text-gray-700 mb-8">
         Create customized, macro-balanced meal plans for your clients.
       </p>
-      {stepContent}
-      {loading && <AiLoadingModal aiMessage={aiMessage} />}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow-lg rounded-2xl p-8 mb-12 border border-yellow-200"
+      >
+        <h2 className="text-xl font-bold text-gray-900 mb-4">Client Info</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-7 mb-6">
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Client Name (optional)
+              <input
+                name="client_name"
+                value={form.client_name}
+                onChange={handleChange}
+                placeholder="Leave blank for general plan"
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50 focus:outline-gold-600"
+              />
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Gender
+              <select
+                name="gender"
+                value={form.gender}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+              >
+                <option value="">Select</option>
+                {GENDERS.map(g => <option key={g} value={g}>{g}</option>)}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Age
+              <input
+                name="age"
+                type="number"
+                value={form.age}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+                placeholder="e.g. 30"
+              />
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Height (inches)
+              <input
+                name="height"
+                type="number"
+                value={form.height}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+                placeholder="e.g. 65"
+              />
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Weight (lbs)
+              <input
+                name="weight"
+                type="number"
+                value={form.weight}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+                placeholder="e.g. 140"
+              />
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Activity Level
+              <select
+                name="activity"
+                value={form.activity}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+              >
+                <option value="">Select</option>
+                {ACTIVITY_LEVELS.map(a => <option key={a.value} value={a.value}>{a.label}</option>)}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Goal
+              <select
+                name="goal"
+                value={form.goal}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+              >
+                <option value="">Select</option>
+                {GOALS.map(g => <option key={g.value} value={g.value}>{g.label}</option>)}
+              </select>
+            </label>
+            <div className="text-gold-700 text-xs mt-1">
+              {macroSuggestionText}
+            </div>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Target Calories per day
+              <input
+                name="target_kcal"
+                type="number"
+                value={form.target_kcal}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50 font-semibold text-gold-700"
+              />
+              <span className="block text-xs text-gray-500">Auto-calculated from your info & goal, but editable</span>
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Macros (%)
+              <div className="flex gap-2 items-center mt-1">
+                Protein <input className="w-14 rounded-md border border-yellow-200 px-2 py-1 bg-yellow-50" name="protein" value={form.macros.protein} onChange={handleChange} placeholder="30" />%
+                Carbs <input className="w-14 rounded-md border border-yellow-200 px-2 py-1 bg-yellow-50" name="carbs" value={form.macros.carbs} onChange={handleChange} placeholder="40" />%
+                Fat <input className="w-14 rounded-md border border-yellow-200 px-2 py-1 bg-yellow-50" name="fat" value={form.macros.fat} onChange={handleChange} placeholder="30" />%
+              </div>
+              <div className="text-xs text-gray-500 mt-1">
+                (Protein and carbs have 4 calories/gram, fat has 9 calories/gram.)
+                <div className="text-red-500">
+                  {macros.protein + macros.carbs + macros.fat !== 100 && "Warning: Macros must add up to 100!"}
+                </div>
+              </div>
+            </label>
+            {macros.protein + macros.carbs + macros.fat === 100 && totalCals > 0 && (
+              <div className="text-xs text-gold-700 bg-yellow-50 p-2 rounded mt-2 border border-yellow-200">
+                <b>Your daily macro breakdown:</b><br/>
+                Protein: {macrosInfo.protein}g ({Math.round(macrosInfo.proteinCals)} kcal),&nbsp;
+                Carbs: {macrosInfo.carbs}g ({Math.round(macrosInfo.carbsCals)} kcal),&nbsp;
+                Fat: {macrosInfo.fat}g ({Math.round(macrosInfo.fatCals)} kcal)
+              </div>
+            )}
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Number of Days
+              <input
+                name="days"
+                type="number"
+                min={1}
+                max={30}
+                value={form.days}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+              />
+              <span className="block text-xs text-gray-500">1 to 30</span>
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Diet Preference
+              <select
+                name="diet_style"
+                value={form.diet_style}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+              >
+                <option value="">Select</option>
+                {DIET_STYLES.map(d => <option key={d} value={d}>{d}</option>)}
+              </select>
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Restrictions
+              <input
+                name="restrictions"
+                value={form.restrictions}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+                placeholder="e.g. gluten, nuts"
+              />
+              <span className="block text-xs text-gray-500">Comma separated (e.g. dairy, gluten, nuts)</span>
+            </label>
+          </div>
+          <div>
+            <label className="block text-gray-700 font-medium mb-1">
+              Notes
+              <input
+                name="notes"
+                value={form.notes}
+                onChange={handleChange}
+                className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
+                placeholder="e.g. likes spicy, hates broccoli"
+              />
+            </label>
+          </div>
+        </div>
+        <div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="mt-2 bg-yellow-400 hover:bg-yellow-500 text-gray-900 font-bold py-3 px-7 rounded-xl shadow transition-all disabled:bg-yellow-200"
+          >
+            {loading ? "Generating..." : "Generate Meal Plan"}
+          </button>
+          {error && <div className="text-red-600 mt-3 font-semibold">{error}</div>}
+        </div>
+      </form>
+
+      {loading && (
+        <div className="flex flex-col items-center gap-3 my-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-yellow-200 border-t-yellow-400"></div>
+          <div className="text-gold-700 text-lg font-semibold">Creating your custom meal plan...</div>
+        </div>
+      )}
+
+      {plan && (
+        <div>
+          <section className="bg-yellow-50 p-6 rounded-xl mb-8 border border-yellow-200">
+            <h2 className="text-gold-700 text-xl font-bold mb-2">The Reason Behind Your Magic Numbers</h2>
+            <p>{plan.summary}</p>
+          </section>
+          {Array.isArray(plan.weeks) && plan.weeks.length > 0 ? (
+            <WeeksPlan weeks={plan.weeks} />
+          ) : (
+            <SingleWeekPlan plan={plan} />
+          )}
+        </div>
+      )}
+      {plan && (
+  <button
+    onClick={downloadPlanAsPDF}
+    className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+  >
+    Download as PDF
+  </button>
+)}
     </div>
   );
 }
