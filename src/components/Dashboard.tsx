@@ -4,15 +4,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
-
 import {
   TrendingUp, Users, LayoutDashboard, Mail, Palette,
   Store, MessageSquare, Grid3x3, Target, Calendar, Library,
   CreditCard, Layout, Database, Brain, Users2, Sparkles, Flame,
   AlertTriangle, GitBranch
 } from 'lucide-react';
-
-import ContentLibrary from './ContentLibrary';
 import ContentStrategyEngine from './ContentStrategyEngine';
 import { AIContentGenerator } from './AIContentGenerator';
 import AnalyticsDashboard from './AnalyticsDashboard';
@@ -31,12 +28,13 @@ import CreatorDashboard from './marketplace/CreatorDashboard';
 import SMSDashboard from './sms/SMSDashboard';
 import LandingPageBuilder from './landing/LandingPageBuilder';
 import SubscriberDashboard from './crm/SubscriberDashboard';
-import ContentPlanner from './content/ContentPlanner';
+import ContentPlannerBoard from './content/ContentPlannerBoard';
 import AutomationDashboard from './automation/AutomationDashboard';
 import WebhookDashboard from './webhooks/WebhookDashboard';
 import TeamDashboard from './teams/TeamDashboard';
 import BrandDNAWizard from './brand/BrandDNAWizard';
 import BrandDNAPDFExport from './brand/BrandDNAPDFExport';
+import ContentLibrary from './ContentLibrary';
 
 import DailyChallenge from './DailyChallenge';
 import WeeklyChallengeProgress from './WeeklyChallengeProgress';
@@ -176,10 +174,6 @@ const Dashboard: React.FC = () => {
                 <Sparkles className="w-4 h-4" /> AI Generator
               </TabsTrigger>
 
-              <TabsTrigger value="strategy" className="flex items-center gap-2">
-                <Brain className="w-4 h-4" /> Content Strategy
-              </TabsTrigger>
-
               <TabsTrigger value="clientacquisition" className="flex items-center gap-2">
                 <Target className="w-4 h-4" /> Client Acquisition
               </TabsTrigger>
@@ -189,7 +183,7 @@ const Dashboard: React.FC = () => {
               </TabsTrigger>
 
               <TabsTrigger value="planner" className="flex items-center gap-2">
-                <Calendar className="w-4 h-4" /> Content Planner
+               <Calendar className="w-4 h-4" /> Life & Biz Board
               </TabsTrigger>
 
               <TabsTrigger value="subscribers" className="flex items-center gap-2">
@@ -298,7 +292,7 @@ const Dashboard: React.FC = () => {
             <TabsContent value="strategy"><ContentStrategyEngine /></TabsContent>
             <TabsContent value="clientacquisition"><ClientAcquisitionDashboard /></TabsContent>
             <TabsContent value="content"><MonthlyContentPack /></TabsContent>
-            <TabsContent value="planner"><ContentPlanner /></TabsContent>
+            <TabsContent value="planner"><ContentPlannerBoard /></TabsContent>
             <TabsContent value="subscribers"><SubscriberDashboard /></TabsContent>
             <TabsContent value="library"><ContentLibrary /></TabsContent>
             <TabsContent value="landing"><LandingPageBuilder /></TabsContent>

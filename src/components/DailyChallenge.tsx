@@ -1,3 +1,4 @@
+import Leaderboard from './accountability/Leaderboard';
 import React, { useState, useEffect } from 'react';
 import { CheckCircle2, Circle, Trophy } from 'lucide-react';
 import { Card } from '@/components/ui/card';
@@ -158,7 +159,7 @@ if (error) {
           <LeaderboardSettings />
         </Card>
       </div>
-      
+
       <Card className="p-6">
   <Leaderboard />
 </Card>
