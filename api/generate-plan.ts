@@ -1,3 +1,4 @@
+https://github.com/sarahrichfit23-hue/content-to-cash-club/blob/main/api/generate-plan.ts
 // vite dev proxy fallback (mock)
 app.post("/api/generate-plan", (req, res) => {
   res.json({
