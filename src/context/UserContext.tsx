@@ -45,8 +45,8 @@ export const UserProvider = ({ children }: { children: ReactNode }) => {
 
       if (!data) {
         // no record yet → assume default
-        console.log("ℹ️ No coach record yet for this user — defaulting to 'free'");
-        setRole("free");
+       console.log("ℹ️ No coach record yet for this user — defaulting to 'regular'");
+setRole("regular");
         return;
       }
 

@@ -55,7 +55,9 @@ function clearCachedPack() {
   }
 }
 
-async function fetchWithRetry(url: string, maxRetries = 3): Promise<Response> {
+async function fetchWithRetry(endpoint: string, maxRetries = 3): Promise<Response> {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const url = `${apiUrl}${endpoint.startsWith("/") ? "" : "/"}${endpoint}`;
   for (let i = 0; i < maxRetries; i++) {
     try {
       const response = await fetch(url);

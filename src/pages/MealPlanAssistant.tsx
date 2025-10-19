@@ -359,6 +359,9 @@ export default function MealPlanAssistant() {
       // CHANGE THIS URL TO YOUR DEPLOYED BACKEND ON RENDER, ETC!
       // For local dev: "http://localhost:3001/api/generate-plan"
       // For deployed: "https://your-backend.onrender.com/api/generate-plan"
+      // CHANGE THIS URL TO YOUR DEPLOYED BACKEND ON RENDER, ETC!
+      // For local dev: "http://localhost:3001/api/generate-plan"
+      // For deployed: "https://your-backend.onrender.com/api/generate-plan"
       const res = await fetch("http://localhost:3001/api/generate-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -111,6 +111,13 @@ export default function Login() {
           <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
           {loadingGoogle ? "Redirecting…" : "Sign in with Google"}
         </Button>
+      
+      <p className="text-center mt-6 text-sm text-muted-foreground">
+  Don’t have an account?{" "}
+  <a href="/signup" className="text-blue-600 underline font-semibold">
+    Sign up
+  </a>
+</p>
       </div>
     </div>
   );

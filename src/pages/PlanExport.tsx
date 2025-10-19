@@ -61,10 +61,11 @@ export default function PlanExport() {
         theme, // ignored by the minimal template; useful when you upgrade templates
       };
 
-      const resp = await fetch("/api/render-pdf", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+ const apiUrl = import.meta.env.VITE_API_URL;
+const resp = await fetch(`${apiUrl}/api/render-pdf`, {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify(body),
       });
 
       if (!resp.ok) {

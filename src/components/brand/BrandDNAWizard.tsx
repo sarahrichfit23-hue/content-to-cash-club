@@ -77,6 +77,7 @@ export default function BrandDNAWizard({
 
   // ✅ Save to Supabase
   const handleSave = async () => {
+      console.log("Current user:", user);
     if (!user) return alert("Please log in first.");
     setSaving(true);
     const { error } = await supabase.from("branddna").insert({

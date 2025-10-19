@@ -195,7 +195,7 @@ export default function AudienceSegmentSelector({ selectedSegment, onSelect }: A
                     </tr>
                   </thead>
                   <tbody>
-                    {filteredSubscribers.slice(0, 10).map(subscriber => (
+                    {filtered.slice(0, 10).map(subscriber => (
                       <tr key={subscriber.id} className="border-t">
                         <td className="p-3">
                           <div>

@@ -1,6 +1,7 @@
 import React from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Checkout from './pages/Checkout'; // Adjust path if needed
 
 import { AuthProvider } from "@/contexts/AuthProvider";
 import { AppProvider } from "@/contexts/AppContext";
@@ -79,8 +80,15 @@ export default function App() {
                     <Upgrade />
                   </ProtectedRoute>
                 }
-              />
+                />
 
+                  {/* 💳 Checkout Page */}
+              <Route 
+              path="/checkout" 
+              element={
+              <Checkout />} 
+              />
+            
               {/* 🚫 404 Fallback */}
               <Route path="*" element={<NotFound />} />
             </Routes>
