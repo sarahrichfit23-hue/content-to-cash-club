@@ -359,11 +359,19 @@ export default function MealPlanAssistant() {
       // CHANGE THIS URL TO YOUR DEPLOYED BACKEND ON RENDER, ETC!
       // For local dev: "http://localhost:3001/api/generate-plan"
       // For deployed: "https://your-backend.onrender.com/api/generate-plan"
-      const res = await fetch("http://localhost:3001/api/generate-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+     // apiClient.ts
+export async function generatePlan(payload: any) {
+  const apiUrl = import.meta.env.VITE_API_URL;
+  const res = await fetch(apiUrl, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    throw new Error(`API error: ${res.status}`);
+  }
+  return await res.json();
+}
 
       if (!res.ok) {
         const data = await res.json();
