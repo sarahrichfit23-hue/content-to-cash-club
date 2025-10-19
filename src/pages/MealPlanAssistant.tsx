@@ -1,6 +1,6 @@
 import jsPDF from "jspdf";
 import React, { useState, useEffect } from "react";
-import { generatePlan } from "../api/apiClient"; // Adjust the path as needed
+import { generatePlan } from "../api/apiClient"; // <-- Correct import!
 
 // ====== CONSTANTS ======
 const GENDERS = ["Female", "Male", "Non-binary", "Prefer not to say"];
@@ -279,7 +279,7 @@ export default function MealPlanAssistant() {
     target_kcal: "",
     macros: { protein: "", carbs: "", fat: "" },
     notes: "",
-    days: 4, // changed default to 4
+    days: 4,
   });
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -339,39 +339,25 @@ export default function MealPlanAssistant() {
     }
   };
 
-const handleSubmit = async e => {
-  e.preventDefault();
-  setLoading(true);
-  setError("");
-  setPlan(null);
+  const handleSubmit = async e => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+    setPlan(null);
 
-  try {
-    const payload = {
-      ...form,
-      days: Math.min(Number(form.days), 4), // enforce max 4
-      restrictions: form.restrictions.split(",").map(s => s.trim()).filter(Boolean),
-      macros: {
-        protein: form.macros.protein,
-        carbs: form.macros.carbs,
-        fat: form.macros.fat,
-      },
-    };
-
-      // CHANGE THIS URL TO YOUR DEPLOYED BACKEND ON RENDER, ETC!
-      // For local dev: "http://localhost:3001/api/generate-plan"
-      // For deployed: "https://your-backend.onrender.com/api/generate-plan"
-      const res = await fetch("http://localhost:3001/api/generate-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Unknown error");
-      }
-
-      const data = await res.json();
+    try {
+      const payload = {
+        ...form,
+        days: Math.min(Number(form.days), 4),
+        restrictions: form.restrictions.split(",").map(s => s.trim()).filter(Boolean),
+        macros: {
+          protein: form.macros.protein,
+          carbs: form.macros.carbs,
+          fat: form.macros.fat,
+        },
+      };
+      // --- THE ONLY API CALL YOU NEED ---
+      const data = await generatePlan(payload);
       setPlan(data);
     } catch (err) {
       setError(err.message || "Something went wrong");
