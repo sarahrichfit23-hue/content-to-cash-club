@@ -369,7 +369,6 @@ export async function generatePlan(payload: any) {
     body: JSON.stringify(payload),
   });
 
-  // Try to parse the response even for errors
   let data;
   try {
     data = await res.json();
@@ -378,7 +377,6 @@ export async function generatePlan(payload: any) {
   }
 
   if (!res.ok) {
-    // If backend returns an error field, use it
     throw new Error(data?.error || "Unknown error");
   }
 
