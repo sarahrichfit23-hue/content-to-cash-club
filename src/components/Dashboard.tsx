@@ -58,15 +58,15 @@ const Dashboard: React.FC = () => {
     | 'ai'
     | 'community'
     | 'billing'
-    | 'campaigns'
-    | 'workflows'
-    | 'marketplace'
-    | 'creator'
+    // | 'campaigns'
+    // | 'workflows'
+    // | 'marketplace'
+    // | 'creator'
     | 'sms'
-    | 'landing'
+    // | 'landing'
     | 'subscribers'
     | 'planner'
-    | 'teams'
+    // | 'teams'
     | 'whitelabel'
     | 'branddna'
     | 'accountability'
@@ -194,41 +194,41 @@ const Dashboard: React.FC = () => {
                 <Library className="w-4 h-4" /> My Library
               </TabsTrigger>
 
-              <TabsTrigger value="landing" className="flex items-center gap-2">
+              {/* <TabsTrigger value="landing" className="flex items-center gap-2">
                 <Layout className="w-4 h-4" /> Landing Pages
-              </TabsTrigger>
+              </TabsTrigger> */}
 
               <TabsTrigger value="community" className="flex items-center gap-2">
                 <Users className="w-4 h-4" /> Community
               </TabsTrigger>
 
-              <TabsTrigger value="marketplace" className="flex items-center gap-2">
+              {/* <TabsTrigger value="marketplace" className="flex items-center gap-2">
                 <Store className="w-4 h-4" /> Marketplace
               </TabsTrigger>
 
               <TabsTrigger value="creator" className="flex items-center gap-2">
                 <Palette className="w-4 h-4" /> Creator Dashboard
-              </TabsTrigger>
+              </TabsTrigger> */}
 
               <TabsTrigger value="sms" className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" /> SMS
               </TabsTrigger>
 
-              <TabsTrigger value="teams" className="flex items-center gap-2">
+              {/* <TabsTrigger value="teams" className="flex items-center gap-2">
                 <Users2 className="w-4 h-4" /> Teams
-              </TabsTrigger>
+              </TabsTrigger> */}
 
               <TabsTrigger value="billing" className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4" /> Billing
               </TabsTrigger>
 
-              <TabsTrigger value="workflows" className="flex items-center gap-2">
+              {/* <TabsTrigger value="workflows" className="flex items-center gap-2">
                 <GitBranch className="w-4 h-4" /> Email Workflows
               </TabsTrigger>
 
               <TabsTrigger value="campaigns" className="flex items-center gap-2">
                 <Mail className="w-4 h-4" /> Email Campaigns
-              </TabsTrigger>
+              </TabsTrigger> */}
 
               <TabsTrigger value="whitelabel" className="flex items-center gap-2">
                 <Palette className="w-4 h-4" /> White Label
@@ -295,15 +295,15 @@ const Dashboard: React.FC = () => {
             <TabsContent value="planner"><ContentPlannerBoard /></TabsContent>
             <TabsContent value="subscribers"><SubscriberDashboard /></TabsContent>
             <TabsContent value="library"><ContentLibrary /></TabsContent>
-            <TabsContent value="landing"><LandingPageBuilder /></TabsContent>
+            {/* <TabsContent value="landing"><LandingPageBuilder /></TabsContent> */}
             <TabsContent value="community"><CommunityHub /></TabsContent>
-            <TabsContent value="marketplace"><TemplateMarketplace /></TabsContent>
-            <TabsContent value="creator"><CreatorDashboard /></TabsContent>
+            {/* <TabsContent value="marketplace"><TemplateMarketplace /></TabsContent>
+            <TabsContent value="creator"><CreatorDashboard /></TabsContent> */}
             <TabsContent value="sms"><SMSDashboard /></TabsContent>
-            <TabsContent value="teams"><TeamDashboard /></TabsContent>
+            {/* <TabsContent value="teams"><TeamDashboard /></TabsContent> */}
             <TabsContent value="billing"><BillingPortal userId={user?.id || ''} /></TabsContent>
-            <TabsContent value="workflows"><EmailWorkflowBuilder /></TabsContent>
-            <TabsContent value="campaigns"><EmailCampaignBuilder /></TabsContent>
+            {/* <TabsContent value="workflows"><EmailWorkflowBuilder /></TabsContent>
+            <TabsContent value="campaigns"><EmailCampaignBuilder /></TabsContent> */}
             <TabsContent value="whitelabel"><WhiteLabelDashboard /></TabsContent>
 
             {/* ✅ Updated Meal Plan Tab Content */}
