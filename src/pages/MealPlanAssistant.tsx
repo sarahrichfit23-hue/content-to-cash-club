@@ -116,7 +116,7 @@ function ShoppingList({ shopping, checklist, setChecklist }) {
 }
 
 function RecipePack({ recipes }) {
-  if (!Array.isArray(recipes) || recipes.length === 0) return null;
+  if (!Array.isArray(recipes) || recipes.length === 0) return <div>No recipes found.</div>;
   return (
     <div>
       {recipes.map((rec, idx) => (
@@ -129,18 +129,19 @@ function RecipePack({ recipes }) {
           )}
           <b>Ingredients:</b>
           <ul className="mb-2">
-            {Array.isArray(rec.ingredients) && rec.ingredients.map((ing, i) => <li key={i}>{ing}</li>)}
+            {Array.isArray(rec.ingredients) && rec.ingredients.length > 0
+              ? rec.ingredients.map((ing, i) => <li key={i}>{ing}</li>)
+              : <li>No ingredients provided.</li>
+            }
           </ul>
-          <b>Instructions:</b>
+          <b>Instructions/Prep:</b>
           <ol className="ml-5 list-decimal">
-            {Array.isArray(rec.instructions)
+            {Array.isArray(rec.instructions) && rec.instructions.length > 0
               ? rec.instructions.map((step, sidx) => (
                   <li key={sidx}>{step.trim()}</li>
                 ))
-              : typeof rec.instructions === "string"
-                ? rec.instructions.split(/\d+\./).filter(Boolean).map((step, sidx) =>
-                    <li key={sidx}>{step.trim()}</li>
-                  )
+              : rec.prep
+                ? <li>{rec.prep}</li>
                 : <li>No instructions provided.</li>
             }
           </ol>
@@ -277,7 +278,7 @@ export default function MealPlanAssistant() {
     target_kcal: "",
     macros: { protein: "", carbs: "", fat: "" },
     notes: "",
-    days: 7,
+    days: 4, // changed default to 4
   });
   const [plan, setPlan] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -324,7 +325,7 @@ export default function MealPlanAssistant() {
     } else if (name === "days") {
       setForm(prev => ({
         ...prev,
-        days: Number(value)
+        days: Math.min(Number(value), 4) // limit to 4
       }));
     } else {
       setForm(prev => ({
@@ -346,7 +347,7 @@ export default function MealPlanAssistant() {
     try {
       const payload = {
         ...form,
-        days: Number(form.days), // ENSURE days is a number!
+        days: Math.min(Number(form.days), 4), // enforce max 4
         restrictions: form.restrictions.split(",").map(s => s.trim()).filter(Boolean),
         macros: {
           protein: form.macros.protein,
@@ -355,8 +356,9 @@ export default function MealPlanAssistant() {
         },
       };
 
-      console.log("Sending payload:", payload); // helpful log for debugging
-
+      // CHANGE THIS URL TO YOUR DEPLOYED BACKEND ON RENDER, ETC!
+      // For local dev: "http://localhost:3001/api/generate-plan"
+      // For deployed: "https://your-backend.onrender.com/api/generate-plan"
       const res = await fetch("http://localhost:3001/api/generate-plan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -388,39 +390,41 @@ export default function MealPlanAssistant() {
   const macroSuggestionText = form.goal && MACRO_SUGGESTIONS[form.goal]
     ? `Suggested macros for '${form.goal}': Protein ${MACRO_SUGGESTIONS[form.goal].protein}%, Carbs ${MACRO_SUGGESTIONS[form.goal].carbs}%, Fat ${MACRO_SUGGESTIONS[form.goal].fat}%`
     : "";
-function downloadPlanAsPDF() {
-  if (!plan) return;
-  const doc = new jsPDF();
-  let y = 10;
-  doc.setFontSize(16);
-  doc.text("Meal Plan Summary", 10, y);
-  y += 8;
 
-  doc.setFontSize(12);
-  doc.text(plan.summary || "No summary", 10, y);
-  y += 12;
-
-  (plan.days_plan || []).forEach((day, idx) => {
-    doc.setFontSize(14);
-    doc.text(day.date || `Day ${day.day || idx + 1}`, 10, y);
+  function downloadPlanAsPDF() {
+    if (!plan) return;
+    const doc = new jsPDF();
+    let y = 10;
+    doc.setFontSize(16);
+    doc.text("Meal Plan Summary", 10, y);
     y += 8;
-    doc.setFontSize(12);
-    ["breakfast", "lunch", "dinner", "snack"].forEach(mealType => {
-      if (day[mealType]) {
-        doc.text(
-          `${mealType.charAt(0).toUpperCase() + mealType.slice(1)}: ${day[mealType]}`,
-          12,
-          y
-        );
-        y += 7;
-      }
-    });
-    y += 4;
-    if (y > 270) { doc.addPage(); y = 10; }
-  });
 
-  doc.save("meal-plan.pdf");
-}
+    doc.setFontSize(12);
+    doc.text(plan.summary || "No summary", 10, y);
+    y += 12;
+
+    (plan.days_plan || []).forEach((day, idx) => {
+      doc.setFontSize(14);
+      doc.text(day.date || `Day ${day.day || idx + 1}`, 10, y);
+      y += 8;
+      doc.setFontSize(12);
+      ["breakfast", "lunch", "dinner", "snack"].forEach(mealType => {
+        if (day[mealType]) {
+          doc.text(
+            `${mealType.charAt(0).toUpperCase() + mealType.slice(1)}: ${day[mealType]}`,
+            12,
+            y
+          );
+          y += 7;
+        }
+      });
+      y += 4;
+      if (y > 270) { doc.addPage(); y = 10; }
+    });
+
+    doc.save("meal-plan.pdf");
+  }
+
   return (
     <div className="max-w-4xl mx-auto py-12 px-4">
       <h1 className="text-3xl font-extrabold text-gray-900 mb-2 flex items-center gap-2">
@@ -435,6 +439,7 @@ function downloadPlanAsPDF() {
       >
         <h2 className="text-xl font-bold text-gray-900 mb-4">Client Info</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-7 mb-6">
+          {/* All client info fields, as before */}
           <div>
             <label className="block text-gray-700 font-medium mb-1">
               Client Name (optional)
@@ -570,17 +575,19 @@ function downloadPlanAsPDF() {
           </div>
           <div>
             <label className="block text-gray-700 font-medium mb-1">
-              Number of Days
+              Number of Days (up to 4 at a time)
               <input
                 name="days"
                 type="number"
                 min={1}
-                max={30}
+                max={4}
                 value={form.days}
                 onChange={handleChange}
                 className="mt-1 w-full rounded-lg border border-yellow-200 px-3 py-2 bg-yellow-50"
               />
-              <span className="block text-xs text-gray-500">1 to 30</span>
+              <span className="block text-xs text-gray-500">
+                Enter a number between 1 and 4. For longer plans, please generate in batches.
+              </span>
             </label>
           </div>
           <div>
@@ -656,13 +663,13 @@ function downloadPlanAsPDF() {
         </div>
       )}
       {plan && (
-  <button
-    onClick={downloadPlanAsPDF}
-    className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-  >
-    Download as PDF
-  </button>
-)}
+        <button
+          onClick={downloadPlanAsPDF}
+          className="mt-4 bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Download as PDF
+        </button>
+      )}
     </div>
   );
 }
