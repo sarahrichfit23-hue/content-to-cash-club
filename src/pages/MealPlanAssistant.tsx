@@ -1,5 +1,6 @@
 import jsPDF from "jspdf";
 import React, { useState, useEffect } from "react";
+import { generatePlan } from "../api/apiClient"; // Adjust the path as needed
 
 // ====== CONSTANTS ======
 const GENDERS = ["Female", "Male", "Non-binary", "Prefer not to say"];
