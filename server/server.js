@@ -1,13 +1,24 @@
-const calendarRoutes = require('./routes/calendarRoutes');
 require("dotenv").config();
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 const { OpenAI } = require("openai");
 
+// Import your Stripe router here:
+const createStripeSession = require("./create-stripe-session");
+
+// Import your Calendar routes here:
+const calendarRoutes = require("./routes/calendarRoutes");
+
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+
+// Mount your Stripe router here:
+app.use("/", createStripeSession);
+
+// Mount your Calendar routes here:
+app.use("/api/calendar", calendarRoutes);
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
