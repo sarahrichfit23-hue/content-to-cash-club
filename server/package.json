@@ -1,20 +1,15 @@
 {
-  "name": "vite_react_shadcn_ts",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
+  "name": "mealplan-backend",
+  "version": "1.0.0",
+  "main": "server.js",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview",
-    "start": "vite preview --port 3000"
+    "start": "node server.js"
   },
   "dependencies": {
-    // all your dependencies, as you listed above
-  },
-  "devDependencies": {
-    // all your devDependencies, as you listed above
+    "express": "^5.1.0",
+    "dotenv": "^17.2.3",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "openai": "^6.5.0"
   }
 }
