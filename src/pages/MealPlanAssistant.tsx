@@ -356,10 +356,10 @@ export default function MealPlanAssistant() {
         },
       };
 
-      // CHANGE THIS URL TO YOUR DEPLOYED BACKEND ON RENDER, ETC!
-      // For local dev: "http://localhost:3001/api/generate-plan"
-      // For deployed: "https://your-backend.onrender.com/api/generate-plan"
-     // apiClient.ts
+     // CHANGE THIS URL TO YOUR DEPLOYED BACKEND ON RENDER, ETC!
+// For local dev: "http://localhost:3001/api/generate-plan"
+// For deployed: "https://content-to-cash-club.onrender.com"
+
 export async function generatePlan(payload: any) {
   const apiUrl = import.meta.env.VITE_API_URL;
 
