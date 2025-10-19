@@ -339,58 +339,33 @@ export default function MealPlanAssistant() {
     }
   };
 
-  const handleSubmit = async e => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-    setPlan(null);
+const handleSubmit = async e => {
+  e.preventDefault();
+  setLoading(true);
+  setError("");
+  setPlan(null);
 
-    try {
-      const payload = {
-        ...form,
-        days: Math.min(Number(form.days), 4), // enforce max 4
-        restrictions: form.restrictions.split(",").map(s => s.trim()).filter(Boolean),
-        macros: {
-          protein: form.macros.protein,
-          carbs: form.macros.carbs,
-          fat: form.macros.fat,
-        },
-      };
-
-     // CHANGE THIS URL TO YOUR DEPLOYED BACKEND ON RENDER, ETC!
-// For local dev: "http://localhost:3001/api/generate-plan"
-// For deployed: "https://content-to-cash-club.onrender.com"
-
-export async function generatePlan(payload: any) {
-  const apiUrl = import.meta.env.VITE_API_URL;
-
-  const res = await fetch(apiUrl, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
-
-  let data;
   try {
-    data = await res.json();
-  } catch {
-    data = null;
-  }
+    const payload = {
+      ...form,
+      days: Math.min(Number(form.days), 4), // enforce max 4
+      restrictions: form.restrictions.split(",").map(s => s.trim()).filter(Boolean),
+      macros: {
+        protein: form.macros.protein,
+        carbs: form.macros.carbs,
+        fat: form.macros.fat,
+      },
+    };
 
-  if (!res.ok) {
-    throw new Error(data?.error || "Unknown error");
+    // Proper usage!
+    const data = await generatePlan(payload);
+    setPlan(data);
+  } catch (err) {
+    setError(err.message || "Something went wrong");
+  } finally {
+    setLoading(false);
   }
-
-  return data;
-}
-      const data = await res.json();
-      setPlan(data);
-    } catch (err) {
-      setError(err.message || "Something went wrong");
-    } finally {
-      setLoading(false);
-    }
-  };
+};
 
   const macros = {
     protein: Number(form.macros.protein) || 0,
