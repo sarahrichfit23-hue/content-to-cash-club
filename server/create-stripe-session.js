@@ -1,5 +1,5 @@
-const express = require("express");
-const Stripe = require("stripe");
+import express from "express";
+import Stripe from "stripe";
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 const router = express.Router();
@@ -30,4 +30,4 @@ router.post("/create-stripe-session", async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
