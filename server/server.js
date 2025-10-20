@@ -30,10 +30,6 @@ if (!OPENAI_API_KEY) {
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
-/**
- * -------- PROMPT (verbiage) --------
- * Replaces your original buildPrompt. No other code changes needed here.
- */
 function buildPrompt({
   client_name,
   gender,
@@ -142,19 +138,14 @@ Return ONLY the JSON object described above. No surrounding text, no backticks, 
 `;
 }
 
-/**
- * -------- CONTINUATION HELPER --------
- * If the model runs out of tokens, this automatically asks it to continue
- * the SAME JSON until it parses cleanly.
- */
 async function callOpenAIWithContinuation(openai, messages, opts = {}) {
-  const maxTurns = opts.maxTurns ?? 4;      // up to 3 continuations after the first turn
+  const maxTurns = opts.maxTurns ?? 4;
   const model    = opts.model ?? "gpt-4";
   const params   = {
     model,
     messages,
     temperature: 0.3,
-    max_tokens: 6000,   // room for multi-day + recipes
+    max_tokens: 6000,
   };
 
   let fullText = "";
@@ -164,20 +155,15 @@ async function callOpenAIWithContinuation(openai, messages, opts = {}) {
     const chunk = choice?.message?.content || "";
     fullText += chunk;
 
-    // try to parse what we have so far
     try {
       return { text: fullText, json: JSON.parse(fullText), finish_reason: choice?.finish_reason };
-    } catch (_) {
-      // not valid JSON yet -> keep going
-    }
+    } catch (_) {}
 
     const fr = choice?.finish_reason;
     if (fr && fr !== "length") {
-      // stopped for a reason other than length; break out and let parse error surface
       break;
     }
 
-    // Ask to continue the SAME JSON (no preamble)
     messages = [
       ...messages,
       { role: "assistant", content: chunk },
@@ -189,14 +175,9 @@ async function callOpenAIWithContinuation(openai, messages, opts = {}) {
     ];
   }
 
-  // final attempt; if this throws, the route will catch and 500
   return { text: fullText, json: JSON.parse(fullText), finish_reason: "completed-after-continues" };
 }
 
-/**
- * -------- ROUTE --------
- * Uses the system message (verbiage) + continuation helper.
- */
 app.post("/api/generate-plan", async (req, res) => {
   try {
     const {
