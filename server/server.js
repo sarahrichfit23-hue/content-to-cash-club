@@ -28,6 +28,10 @@ if (!OPENAI_API_KEY) {
 
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
 
+/**
+ * -------- PROMPT (verbiage) --------
+ * Replaces your original buildPrompt. No other code changes needed here.
+ */
 function buildPrompt({
   client_name,
   gender,
@@ -44,10 +48,10 @@ function buildPrompt({
   days,
 }) {
   return `
-You are a nutrition expert and advanced meal planner.
-Create a meal plan for a client with the following details, and strictly follow the output structure and ALL instructions below.
+TASK
+You are a registered dietitian and advanced meal-plan generator. Produce a COMPLETE meal plan strictly as VALID JSON, with no markdown/code fences and no extra commentary.
 
-Client Details:
+CLIENT
 Name: ${client_name || "N/A"}
 Gender: ${gender}
 Age: ${age}
@@ -58,77 +62,139 @@ Goal: ${goal}
 Diet Preference: ${diet_style}
 Dietary Restrictions: ${restrictions && restrictions.length ? restrictions.join(", ") : "None"}
 Target Calories: ${target_kcal} kcal/day
-Macronutrient Breakdown: Protein ${macros.protein}%, Carbs ${macros.carbs}%, Fat ${macros.fat}%
+Macro Targets (% of daily kcal): Protein ${macros.protein}%, Carbs ${macros.carbs}%, Fat ${macros.fat}%
 Notes: ${notes || "None"}
+Number of Days to Generate: ${days}
 
-#### STRICT OUTPUT STRUCTURE & RULES ####
+GLOBAL RULES (FOLLOW ALL)
+- Output JSON ONLY (no prose, no code fences).
+- The plan must cover exactly ${days} day(s).
+- No meal title or recipe may be repeated anywhere in the plan.
+- Per-day calories within ±8% of ${target_kcal}; macros approximate Protein ${macros.protein}%, Carbs ${macros.carbs}%, Fat ${macros.fat}%.
+- Respect all preferences/restrictions.
+- Every meal in the plan MUST map to a recipe in "recipes" by exact title.
+- Ingredient quantities must be realistic/measurable (e.g., "1 cup", "150 g", "2 large eggs").
+- Instructions must be cookbook-style with at least 4 steps per recipe.
+- Do not invent fields beyond the structures below.
 
-1. Meals:
-- Create a detailed meal plan for ${days} days${days > 7 ? " (grouped by week, e.g. Week 1: Days 1-7, etc.)" : ""}.
-- Each meal and snack in the entire plan MUST be unique and NOT repeated on any other day.
-- Absolutely do not repeat any meal title, recipe, or snack throughout the plan. If there are not enough unique ideas, invent new ones—do NOT reuse.
-- Each meal in the plan must exactly match a recipe in the "Recipe Pack" section by title.
+STRUCTURES
+If ${days} <= 7, return:
+{
+  "summary": "Short rationale incl. calorie target, macro split, timing, and how preferences/restrictions were handled.",
+  "days_plan": [
+    {
+      "day": 1,
+      "calories_target": ${target_kcal},
+      "macros_target_pct": { "protein": ${macros.protein}, "carbs": ${macros.carbs}, "fat": ${macros.fat} },
+      "meals": [
+        {
+          "meal_type": "breakfast" | "lunch" | "dinner" | "snack",
+          "title": "Exact recipe title (must exist in recipes)",
+          "kcal": number,
+          "protein_g": number,
+          "carbs_g": number,
+          "fat_g": number,
+          "notes": "optional"
+        }
+      ]
+    }
+  ],
+  "shopping_list": {
+    "Pantry":   [ { "item": "name", "qty": "e.g., 1 can (15 oz)", "checked": false } ],
+    "Produce":  [ { "item": "name", "qty": "e.g., 2 medium",      "checked": false } ],
+    "Dairy & Eggs": [ { "item": "name", "qty": "e.g., 12 large",  "checked": false } ],
+    "Protein":  [ { "item": "name", "qty": "e.g., 2 lb",          "checked": false } ]
+  },
+  "recipes": [
+    {
+      "title": "Exact recipe title (matches plan)",
+      "ingredients": [ { "item": "name", "qty": "amount + unit" } ],
+      "instructions": ["Step 1 ...","Step 2 ...","Step 3 ...","Step 4 ..."],
+      "Used in": [ "Day X - breakfast", "Day Y - snack" ]
+    }
+  ]
+}
 
-2. Shopping List:
-- For each week, generate a categorized shopping list: "Pantry", "Produce", "Dairy & Eggs", "Protein" (meat, fish, or plant-based).
-- List realistic, non-repetitive, specific ingredient quantities (e.g. "4 large eggs", "1 bunch kale", "2 lbs chicken breast", "1 can black beans").
-- Present each category as a checklist array with checkboxes.
-
-3. Recipe Pack:
-- Provide a "Recipe Pack" for the entire plan (or for each week if multi-week).
-- Each recipe must have:
-  - Title (must match meal in plan)
-  - List of ingredients (with realistic quantities)
-  - Step-by-step cookbook-style instructions (minimum 4 steps, detailed)
-  - "Used in": List all days/meals in the plan that use this recipe (e.g. "Day 1 - Breakfast, Day 3 - Snack")
-- Recipes should be detailed, clear, and professional—like a real cookbook.
-
-4. Output Format:
-Return ONLY valid JSON.
-If plan is longer than 7 days, structure JSON as:
+If ${days} > 7, return:
 {
   "summary": "...",
   "weeks": [
     {
       "week": 1,
-      "days_plan": [{...}, ...],
-      "shopping_list": {
-        "Pantry": [ { "item": "oats", "qty": "1 lb", "checked": false }, ... ],
-        "Produce": [ ... ],
-        "Dairy & Eggs": [ ... ],
-        "Protein": [ ... ]
-      },
-      "recipes": [ ... ]
-    },
-    ...
+      "days_plan": [ /* same shape as above */ ],
+      "shopping_list": { /* same shape as above */ },
+      "recipes": [ /* same shape as above */ ]
+    }
   ]
 }
-If 7 days or fewer, structure JSON as:
-{
-  "summary": "...",
-  "days_plan": [ ... ],
-  "shopping_list": {
-    "Pantry": [ ... ],
-    "Produce": [ ... ],
-    "Dairy & Eggs": [ ... ],
-    "Protein": [ ... ]
-  },
-  "recipes": [ ... ]
-}
 
-- DO NOT include markdown, explanations, or duplicate recipes.
-- All recipes and ingredients must be referenced in the plan and shopping list.
-- Recipes must be detailed and cookbook-style.
-- Return ONLY valid JSON.
+VALIDATION (MUST PASS BEFORE YOU RETURN)
+- Every meal in "days_plan[].meals[]" has a matching recipe title in "recipes".
+- No duplicate recipe titles anywhere.
+- All ingredients have quantities.
+- "Used in" references are correct (existing day numbers and meal types).
+- JSON parses without error.
 
-- The 'summary' should explain the rationale for the plan and the "magic numbers" (calories, macros, and meal timing).
-
-- Do not invent any extra fields or sections.
-
-#### OUTPUT BEGINS BELOW THIS LINE ####
+RETURN
+Return ONLY the JSON object described above. No surrounding text, no backticks, no explanations.
 `;
 }
 
+/**
+ * -------- CONTINUATION HELPER --------
+ * If the model runs out of tokens, this automatically asks it to continue
+ * the SAME JSON until it parses cleanly.
+ */
+async function callOpenAIWithContinuation(openai, messages, opts = {}) {
+  const maxTurns = opts.maxTurns ?? 4;      // up to 3 continuations after the first turn
+  const model    = opts.model ?? "gpt-4";
+  const params   = {
+    model,
+    messages,
+    temperature: 0.3,
+    max_tokens: 6000,   // room for multi-day + recipes
+  };
+
+  let fullText = "";
+  for (let turn = 0; turn < maxTurns; turn++) {
+    const resp = await openai.chat.completions.create(params);
+    const choice = resp.choices?.[0];
+    const chunk = choice?.message?.content || "";
+    fullText += chunk;
+
+    // try to parse what we have so far
+    try {
+      return { text: fullText, json: JSON.parse(fullText), finish_reason: choice?.finish_reason };
+    } catch (_) {
+      // not valid JSON yet -> keep going
+    }
+
+    const fr = choice?.finish_reason;
+    if (fr && fr !== "length") {
+      // stopped for a reason other than length; break out and let parse error surface
+      break;
+    }
+
+    // Ask to continue the SAME JSON (no preamble)
+    messages = [
+      ...messages,
+      { role: "assistant", content: chunk },
+      {
+        role: "user",
+        content:
+          "Continue the SAME JSON from exactly where you stopped. Do not repeat earlier keys or wrap in code fences. Return ONLY the remaining JSON."
+      }
+    ];
+  }
+
+  // final attempt; if this throws, the route will catch and 500
+  return { text: fullText, json: JSON.parse(fullText), finish_reason: "completed-after-continues" };
+}
+
+/**
+ * -------- ROUTE --------
+ * Uses the system message (verbiage) + continuation helper.
+ */
 app.post("/api/generate-plan", async (req, res) => {
   try {
     const {
@@ -163,33 +229,21 @@ app.post("/api/generate-plan", async (req, res) => {
       days,
     });
 
-    const response = await openai.chat.completions.create({
+    const messages = [
+      {
+        role: "system",
+        content:
+          "You are a precise meal plan generator. Respond with VALID JSON only (no markdown, no code fences). Ensure uniqueness, calorie/macro compliance, and recipe mapping."
+      },
+      { role: "user", content: prompt }
+    ];
+
+    const { text, json, finish_reason } = await callOpenAIWithContinuation(openai, messages, {
       model: "gpt-4",
-      messages: [
-        { role: "user", content: prompt }
-      ],
-      temperature: 0.5,
-      max_tokens: 4000,
+      maxTurns: 4
     });
 
-    const content = response.choices[0].message.content;
-    console.log("=== RAW AI RESPONSE START ===\n" + content + "\n=== RAW AI RESPONSE END ===");
-
-    let json;
-    try {
-      json = JSON.parse(content);
-    } catch {
-      const match = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
-      if (match) {
-        try {
-          json = JSON.parse(match[1]);
-        } catch (e) {
-          throw new Error("Response looked like code block, but still couldn't parse as JSON.");
-        }
-      } else {
-        throw new Error("Could not parse JSON from OpenAI response");
-      }
-    }
+    console.log("=== RAW AI RESPONSE START ===\n" + text + "\n=== RAW AI RESPONSE END ===");
     res.json(json);
   } catch (error) {
     console.error(error);
