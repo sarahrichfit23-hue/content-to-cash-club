@@ -1,14 +1,16 @@
-require("dotenv").config();
-const express = require("express");
-const bodyParser = require("body-parser");
-const cors = require("cors");
-const { OpenAI } = require("openai");
+import dotenv from "dotenv";
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import { OpenAI } from "openai";
 
 // Import your Stripe router here:
-const createStripeSession = require("./create-stripe-session");
+import createStripeSession from "./create-stripe-session.js";
 
 // Import your Calendar routes here:
-const calendarRoutes = require("./routes/calendarRoutes");
+import calendarRoutes from "./routes/calendarRoutes.js";
+
+dotenv.config();
 
 const app = express();
 app.use(cors());
