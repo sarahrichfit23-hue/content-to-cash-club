@@ -89,7 +89,7 @@ export default function TaskManager() {
     });
     if (error) console.error('Convert to event error:', error);
 
-    toast.success('Added to calendar!');
+    toast.success('Added to Calendar!');
   };
 
   // Show a message if there are no tasks
