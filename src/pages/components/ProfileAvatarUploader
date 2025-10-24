@@ -1,0 +1,59 @@
+import React, { useState } from "react";
+import { supabase } from "@/lib/supabase";
+import { useApp } from "@/contexts/AppContext";
+
+const ProfileAvatarUploader = () => {
+  const { user, profile, refreshProfile } = useApp();
+  const [uploading, setUploading] = useState(false);
+
+  const handleAvatarChange = async (event) => {
+    const file = event.target.files[0];
+    if (!file || !user) return;
+    setUploading(true);
+
+    // 1. Upload to Supabase Storage
+    const filePath = `${user.id}/${Date.now()}_${file.name}`;
+    const { data, error } = await supabase.storage
+      .from("avatars")
+      .upload(filePath, file);
+
+    if (error) {
+      alert("Upload failed!");
+      setUploading(false);
+      return;
+    }
+
+    // 2. Get public URL
+    const { publicURL } = supabase.storage
+      .from("avatars")
+      .getPublicUrl(filePath).data;
+
+    // 3. Save to profile
+    const { error: updateError } = await supabase
+      .from("profiles")
+      .update({ avatar_url: publicURL })
+      .eq("id", user.id);
+
+    setUploading(false);
+
+    if (updateError) {
+      alert("Profile update failed!");
+    } else {
+      refreshProfile(); // refetch user profile in context
+    }
+  };
+
+  return (
+    <div>
+      <img
+        src={profile?.avatar_url || "/default-avatar.png"}
+        alt="Avatar"
+        style={{ width: 80, height: 80, borderRadius: "50%" }}
+      />
+      <input type="file" accept="image/*" onChange={handleAvatarChange} disabled={uploading} />
+      {uploading && <p>Uploading...</p>}
+    </div>
+  );
+};
+
+export default ProfileAvatarUploader;

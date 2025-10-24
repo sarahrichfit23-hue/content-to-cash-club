@@ -33,5 +33,6 @@ export default defineConfig(({ command }) => ({
   },
   preview: {
     port: 4173,
+    allowedHosts: ['content-to-cash-club.onrender.com'], // 👈 Fix for your error!
   },
 }));

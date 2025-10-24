@@ -6,7 +6,6 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useApp } from "@/contexts/AppContext";
 import { jsPDF } from "jspdf";
-import { saveBrandDNA } from "@/api/save-branddna";
 import { supabase } from "@/lib/supabase"; // ✅ Make sure this path matches your setup
 import { useToast } from "@/components/ui/use-toast";
 import { ToastAction } from "@/components/ui/toast";
@@ -34,7 +33,7 @@ const StepCard = React.memo(function StepCard({
   );
 });
 
-export default function BrandDNAWizard({
+export default function brandDNAWizard({
   onComplete,
 }: {
   onComplete?: () => void;

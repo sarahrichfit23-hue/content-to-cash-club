@@ -8,7 +8,7 @@ import {
   TrendingUp, Users, LayoutDashboard, Mail, Palette,
   Store, MessageSquare, Grid3x3, Target, Calendar, Library,
   CreditCard, Layout, Database, Brain, Users2, Sparkles, Flame,
-  AlertTriangle, GitBranch
+  AlertTriangle, GitBranch, CalendarDays, 
 } from 'lucide-react';
 import ContentStrategyEngine from './ContentStrategyEngine';
 import { AIContentGenerator } from './AIContentGenerator';
@@ -35,6 +35,10 @@ import TeamDashboard from './teams/TeamDashboard';
 import BrandDNAWizard from './brand/BrandDNAWizard';
 import BrandDNAPDFExport from './brand/BrandDNAPDFExport';
 import ContentLibrary from './ContentLibrary';
+import TaskManager from './calendar/TaskManager';
+import GoogleCalendarConnect from './calendar/GoogleCalendarConnect';
+import { AdminCalendarDashboard } from './calendar/AdminCalendarDashboard';
+import CalendarView from './calendar/CalendarView';
 
 import DailyChallenge from './DailyChallenge';
 import WeeklyChallengeProgress from './WeeklyChallengeProgress';
@@ -47,14 +51,15 @@ import PaymentUpdateModal from './PaymentUpdateModal';
 import { useSubscription } from '@/hooks/useSubscription';
 import MonthlyContentPack from './MonthlyContentPack';
 import ClientAcquisitionDashboard from '@/pages/dashboard/ClientAcquisitionDashboard';
-import MealPlanAssistant from '@/pages/MealPlanAssistant'; // ✅ NEW IMPORT
-import UpgradeModal from '@/components/UpgradeModal'; // 💎 existing modal
+import MealPlanAssistant from '@/pages/MealPlanAssistant';
+import UpgradeModal from '@/components/UpgradeModal';
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     | 'overview'
     | 'content'
     | 'library'
+    | 'calendar'
     | 'ai'
     | 'community'
     | 'billing'
@@ -162,6 +167,11 @@ const Dashboard: React.FC = () => {
                 <LayoutDashboard className="w-4 h-4" /> Dashboard Home
               </TabsTrigger>
 
+              <TabsTrigger value="calendar" className="flex items-center gap-2">
+                <CalendarDays className="w-4 h-4" />
+                Coach Calendar
+              </TabsTrigger>
+
               <TabsTrigger value="accountability" className="flex items-center gap-2">
                 <Flame className="w-4 h-4" /> Accountability
               </TabsTrigger>
@@ -183,7 +193,7 @@ const Dashboard: React.FC = () => {
               </TabsTrigger>
 
               <TabsTrigger value="planner" className="flex items-center gap-2">
-               <Calendar className="w-4 h-4" /> Life & Biz Board
+                <Calendar className="w-4 h-4" /> Life & Biz Board
               </TabsTrigger>
 
               <TabsTrigger value="subscribers" className="flex items-center gap-2">
@@ -284,10 +294,35 @@ const Dashboard: React.FC = () => {
             <TabsContent value="accountability"><DailyChallenge /></TabsContent>
             <TabsContent value="branddna">
               <div className="space-y-6">
-                <BrandDNAPDFExport userId={user?.id || ''} />
+                <BrandDNAPDFExport />
                 <BrandDNAWizard onComplete={() => setActiveTab('ai')} />
               </div>
             </TabsContent>
+
+            {/* ----------- FIXED CALENDAR TAB ----------- */}
+            <TabsContent value="calendar">
+              <div className="space-y-6">
+                <h2 className="text-2xl font-bold mb-4">Coach Calendar & Task Manager</h2>
+                {/* Unified card for calendar + tasks, only one Google Calendar connect */}
+                <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col-reverse lg:flex-row gap-8">
+                  {/* Tasks sidebar (right on desktop, above on mobile) */}
+                  <div className="w-full lg:w-[350px]">
+                    <TaskManager />
+                  </div>
+                  {/* Main calendar area + Google Calendar connect */}
+                  <div className="flex-1 flex flex-col">
+                    <GoogleCalendarConnect />
+                    <div className="mt-6">
+                      <CalendarView />
+                    </div>
+                  </div>
+                </div>
+                {/* Only show admin dashboard for admin */}
+                {profile?.role === 'admin' && <AdminCalendarDashboard />}
+              </div>
+            </TabsContent>
+            {/* ---------- END FIXED CALENDAR TAB ---------- */}
+
             <TabsContent value="ai"><AIContentGenerator /></TabsContent>
             <TabsContent value="strategy"><ContentStrategyEngine /></TabsContent>
             <TabsContent value="clientacquisition"><ClientAcquisitionDashboard /></TabsContent>
@@ -305,7 +340,6 @@ const Dashboard: React.FC = () => {
             {/* <TabsContent value="workflows"><EmailWorkflowBuilder /></TabsContent>
             <TabsContent value="campaigns"><EmailCampaignBuilder /></TabsContent> */}
             <TabsContent value="whitelabel"><WhiteLabelDashboard /></TabsContent>
-
             {/* ✅ Updated Meal Plan Tab Content */}
             <TabsContent value="mealplans"><MealPlanAssistant /></TabsContent>
           </Tabs>

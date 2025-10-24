@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Sparkles, LogOut, CreditCard, LayoutDashboard } from "lucide-react";
+import { Sparkles, LogOut, CreditCard, LayoutDashboard, Settings, Shield } from "lucide-react";
 import { useApp } from "@/contexts/AppContext";
 import { supabase } from "@/lib/supabase";
 import NotificationCenter from "@/components/accountability/NotificationCenter";
@@ -84,35 +84,14 @@ const Navigation: React.FC = () => {
             {/* Authenticated links */}
             {user && (
               <div className="hidden lg:flex items-center gap-6">
-                <Link
-                  to="/dashboard"
-                  className="text-gray-600 hover:text-gray-900 font-medium"
-                >
-                  Dashboard
-                </Link>
-
-                <Link
-                  to="/library"
-                  className="text-gray-600 hover:text-gray-900 font-medium"
-                >
-                  My Library
-                </Link>
-
-                {/* Optional — comment out if Community will be removed */}
-                <Link
-                  to="/community"
+                <a
+                  href="https://www.skool.com/cashflow-catalyst-3343/about?ref=8a53e1c4bbce4c7da9c6c28509d4bcae"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="text-gray-600 hover:text-gray-900 font-medium"
                 >
                   Community
-                </Link>
-
-                {/* ✅ NEW — Meal Plan Generator */}
-                <Link
-                  to="/meal-plan-assistant"
-                  className="text-gray-600 hover:text-gray-900 font-medium"
-                >
-                  Meal Plan Generator
-                </Link>
+                </a>
               </div>
             )}
           </div>
@@ -141,14 +120,6 @@ const Navigation: React.FC = () => {
                   </div>
                 )}
 
-                {/* ✅ Meal Plan Generator Button (same route) */}
-                <button
-                  onClick={() => navigate("/meal-plan-assistant")}
-                  className="px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white font-medium rounded-lg hover:shadow-md transition-all"
-                >
-                  Meal Plan Generator
-                </button>
-
                 {/* Notifications */}
                 <NotificationCenter />
 
@@ -172,7 +143,8 @@ const Navigation: React.FC = () => {
                     </button>
                   </DropdownMenuTrigger>
 
-                  <DropdownMenuContent align="end" className="w-56">
+                  {/* SOLID background, strong shadow, rounded corners */}
+                  <DropdownMenuContent align="end" className="w-56 bg-white shadow-2xl rounded-xl border border-gray-200">
                     <DropdownMenuLabel>
                       <div className="flex flex-col space-y-1">
                         <p className="text-sm font-medium">
@@ -184,11 +156,21 @@ const Navigation: React.FC = () => {
 
                     <DropdownMenuSeparator />
 
-                    <DropdownMenuItem onClick={() => navigate("/dashboard")}>
-                      <LayoutDashboard className="mr-2 h-4 w-4" />
-                      Dashboard
+                    {/* Settings/Profile */}
+                    <DropdownMenuItem onClick={() => navigate("/settings")}>
+                      <Settings className="mr-2 h-4 w-4" />
+                      Settings
                     </DropdownMenuItem>
 
+                    {/* Admin Dashboard - only for admins */}
+                    {profile?.role === "admin" && (
+                      <DropdownMenuItem onClick={() => navigate("/admin")}>
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                      </DropdownMenuItem>
+                    )}
+
+                    {/* Billing */}
                     <DropdownMenuItem onClick={() => navigate("/billing")}>
                       <CreditCard className="mr-2 h-4 w-4" />
                       Billing

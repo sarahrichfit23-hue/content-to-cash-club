@@ -9,7 +9,7 @@ export default function BrandDNAPDFExport() {
   const { user } = useApp();
   const [loading, setLoading] = useState(false);
 
-  // Example placeholder data for now — later we’ll connect this to actual BrandDNAWizard inputs
+  // Example placeholder data for now — later connect to BrandDNAWizard inputs
   const brandData = {
     niche: "Busy professional women over 35",
     audience: "Women who want to build confidence and healthy habits",
@@ -86,20 +86,29 @@ export default function BrandDNAPDFExport() {
 
   return (
     <div style={{ padding: "40px", textAlign: "center" }}>
-      <h1>Brand DNA PDF Export</h1>
-      <p>Download or save your personalized Brand DNA document.</p>
+      <h1 style={{ fontWeight: 700, fontSize: "2rem", color: "#111" }}>
+        Brand DNA PDF Export
+      </h1>
+      <p style={{ color: "#525d6d", marginBottom: "24px" }}>
+        Download or save your personalized Brand DNA document.
+      </p>
       <button
         onClick={handleExport}
         disabled={loading}
         style={{
-          padding: "10px 20px",
+          padding: "10px 24px",
           marginTop: "20px",
           borderRadius: "8px",
           border: "none",
-          backgroundColor: loading ? "#999" : "#e6b325",
-          color: "#000",
+          background: loading
+            ? "#c9c9c9"
+            : "linear-gradient(90deg,#e6b325 0%,#a16207 100%)",
+          color: "#111111",
           cursor: loading ? "not-allowed" : "pointer",
           fontWeight: "600",
+          fontSize: "1rem",
+          boxShadow: "0 4px 20px 0 rgba(230,179,37,0.09)",
+          transition: "all .2s",
         }}
       >
         {loading ? "Saving..." : "Save to My Library"}
