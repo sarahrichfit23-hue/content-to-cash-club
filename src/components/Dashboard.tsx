@@ -35,10 +35,10 @@ import TeamDashboard from './teams/TeamDashboard';
 import BrandDNAWizard from './brand/BrandDNAWizard';
 import BrandDNAPDFExport from './brand/BrandDNAPDFExport';
 import ContentLibrary from './ContentLibrary';
-import TaskManager from './calendar/TaskManager';
-import GoogleCalendarConnect from './calendar/GoogleCalendarConnect';
-import { AdminCalendarDashboard } from './calendar/AdminCalendarDashboard';
-import CalendarView from './calendar/CalendarView';
+import TaskManager from './Calendar/TaskManager';
+import GoogleCalendarConnect from './Calendar/GoogleCalendarConnect';
+import { AdminCalendarDashboard } from './Calendar/AdminCalendarDashboard';
+import CalendarView from './Calendar/CalendarView';
 
 import DailyChallenge from './DailyChallenge';
 import WeeklyChallengeProgress from './WeeklyChallengeProgress';
@@ -167,7 +167,7 @@ const Dashboard: React.FC = () => {
                 <LayoutDashboard className="w-4 h-4" /> Dashboard Home
               </TabsTrigger>
 
-              <TabsTrigger value="calendar" className="flex items-center gap-2">
+              <TabsTrigger value="Calendar" className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4" />
                 Coach Calendar
               </TabsTrigger>
@@ -300,16 +300,16 @@ const Dashboard: React.FC = () => {
             </TabsContent>
 
             {/* ----------- FIXED CALENDAR TAB ----------- */}
-            <TabsContent value="calendar">
+            <TabsContent value="Calendar">
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold mb-4">Coach Calendar & Task Manager</h2>
-                {/* Unified card for calendar + tasks, only one Google Calendar connect */}
+                {/* Unified card for Calendar + tasks, only one Google Calendar connect */}
                 <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col-reverse lg:flex-row gap-8">
                   {/* Tasks sidebar (right on desktop, above on mobile) */}
                   <div className="w-full lg:w-[350px]">
                     <TaskManager />
                   </div>
-                  {/* Main calendar area + Google Calendar connect */}
+                  {/* Main Calendar area + Google Calendar connect */}
                   <div className="flex-1 flex flex-col">
                     <GoogleCalendarConnect />
                     <div className="mt-6">

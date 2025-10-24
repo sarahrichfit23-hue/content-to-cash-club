@@ -23,7 +23,7 @@ export function AdminCalendarDashboard() {
       const coachData = await Promise.all(
         profiles.map(async (coach) => {
           const { data: events } = await supabase
-            .from('calendar_events')
+            .from('Calendar_events')
             .select('*')
             .eq('user_id', coach.id);
 

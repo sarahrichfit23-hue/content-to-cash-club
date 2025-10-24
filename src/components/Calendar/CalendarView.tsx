@@ -78,7 +78,7 @@ export default function CalendarView() {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl p-8 mb-8 flex flex-col">
-      {/* Live date/time above calendar */}
+      {/* Live date/time above Calendar */}
       <div className="text-lg font-bold mb-4 text-black">
         {format(now, "EEEE, MMMM d, yyyy • h:mm:ss a")}
       </div>

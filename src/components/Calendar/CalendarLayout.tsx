@@ -215,7 +215,7 @@ export default function CalendarLayout() {
               event={selectedEvent}
               selectedDate={selectedDate}
             />
-            {/* Custom calendar slot styling */}
+            {/* Custom Calendar slot styling */}
             <style>{`
               .rbc-time-slot {
                 border-bottom: 2px solid #e6b325 !important;

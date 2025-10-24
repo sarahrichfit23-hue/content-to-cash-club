@@ -32,7 +32,7 @@ export default function GoogleCalendarConnect() {
 
   // This is the real Google OAuth flow trigger
   const handleConnect = () => {
-    window.location.href = `${import.meta.env.VITE_API_URL}/api/calendar/start`;
+    window.location.href = `${import.meta.env.VITE_API_URL}/api/Calendar/start`;
   };
 
   const handleSync = async () => {
