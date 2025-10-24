@@ -1,7 +1,6 @@
 import React, { useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
-import Checkout from './pages/Checkout'; // Adjust path if needed
 
 const stripePromise = loadStripe("pk_test_XXXXXXXXXXXXXXXXXXXXXXXX"); // <-- Your publishable key
 

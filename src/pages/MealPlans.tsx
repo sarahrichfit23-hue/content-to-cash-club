@@ -179,7 +179,7 @@ export default function MealPlanAssistant() {
       recipes: plan.recipes,
     };
 
-    const resp = await fetch("/api/generate-plan", {
+      const resp = await fetch("/api/generate-plan", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),

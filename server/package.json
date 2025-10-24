@@ -87,7 +87,8 @@
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.1.0",
     "vaul": "^0.9.3",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "react-big-calendar": "^1.8.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
