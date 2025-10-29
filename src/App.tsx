@@ -21,7 +21,7 @@ import ClientPortalAcceptInvite from "./pages/ClientPortalAcceptInvite";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import AdminRoute from "./components/admin/AdminRoute";
 import AdminPanel from "./pages/AdminPanel";
-
+import SignUp from "@/components/auth/SignUp"; // <-- ADD THIS IMPORT
 
 function NotFound() {
   return (
@@ -46,6 +46,7 @@ export default function App() {
             <Routes>
               {/* 🔓 Public */}
               <Route path="/login" element={<Login />} />
+              <Route path="/signup" element={<SignUp />} /> {/* <-- ADD THIS ROUTE */}
 
               {/* 🧠 Main Dashboard */}
               <Route
@@ -89,13 +90,12 @@ export default function App() {
                     <Upgrade />
                   </ProtectedRoute>
                 }
-                />
+              />
 
-                  {/* 💳 Checkout Page */}
+              {/* 💳 Checkout Page */}
               <Route 
-              path="/checkout" 
-              element={
-              <Checkout />} 
+                path="/checkout" 
+                element={<Checkout />} 
               />
 
               {/* Coaching routes */}
@@ -130,7 +130,7 @@ export default function App() {
                 </ErrorBoundary>
               } />
 
- {/* Admin route */}
+              {/* Admin route */}
               <Route path="/admin" element={
                 <ErrorBoundary>
                   <AdminRoute>
