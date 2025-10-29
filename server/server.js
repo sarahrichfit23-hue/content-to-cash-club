@@ -1,10 +1,9 @@
 import dotenv from "dotenv";
-dotenv.config();
-
 import express from "express";
 import bodyParser from "body-parser";
 import cors from "cors";
 import { OpenAI } from "openai";
+import Stripe from "stripe";
 
 // Import your Stripe router here:
 import createStripeSession from "./create-stripe-session.js";
@@ -12,8 +11,45 @@ import createStripeSession from "./create-stripe-session.js";
 // Import your Calendar routes here:
 import calendarRoutes from "./routes/calendarRoutes.js";
 
+dotenv.config();
+
 const app = express();
 app.use(cors());
+
+// --- STRIPE WEBHOOK ENDPOINT (add this BEFORE bodyParser.json) ---
+app.post(
+  "/api/stripe/webhook",
+  bodyParser.raw({ type: "application/json" }),
+  (req, res) => {
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+      apiVersion: "2023-10-16",
+    });
+    const sig = req.headers["stripe-signature"];
+    let event;
+    try {
+      event = stripe.webhooks.constructEvent(
+        req.body,
+        sig,
+        process.env.STRIPE_WEBHOOK_SECRET
+      );
+    } catch (err) {
+      console.error("Webhook signature verification failed.", err.message);
+      return res.status(400).send(`Webhook Error: ${err.message}`);
+    }
+
+    // Handle Stripe events
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      // Example: you can add logic here to unlock access for user
+      console.log("Stripe checkout.session.completed:", session);
+    }
+    // Add more event types as needed
+
+    res.status(200).json({ received: true });
+  }
+);
+
+// --- REST OF YOUR API (all other routes use JSON parser) ---
 app.use(bodyParser.json());
 
 // Mount your Stripe router here:
@@ -24,27 +60,11 @@ app.use("/api/calendar", calendarRoutes);
 
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 if (!OPENAI_API_KEY) {
-  console.error("❌ OPENAI_API_KEY not found in .env file!");
+  console.error("ERROR: Missing OpenAI API key! Add OPENAI_API_KEY to your .env file.");
   process.exit(1);
 }
-console.log("✅ Found OPENAI_API_KEY, starting server...");
 
-// Create the OpenAI client instance
 const openai = new OpenAI({ apiKey: OPENAI_API_KEY });
-
-// ======= GOOGLE CALENDAR OAUTH START ROUTE =======
-app.get('/api/calendar/start', (req, res) => {
-  const params = new URLSearchParams({
-    client_id: process.env.GOOGLE_CLIENT_ID,
-    redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-    response_type: 'code',
-    scope: 'https://www.googleapis.com/auth/calendar https://www.googleapis.com/auth/userinfo.email',
-    access_type: 'offline',
-    prompt: 'consent',
-  });
-  res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
-});
-// ================================================
 
 function buildPrompt({
   client_name,
