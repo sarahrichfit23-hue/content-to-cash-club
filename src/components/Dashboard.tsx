@@ -39,6 +39,7 @@ import TaskManager from './Calendar/TaskManager';
 import GoogleCalendarConnect from './Calendar/GoogleCalendarConnect';
 import { AdminCalendarDashboard } from './Calendar/AdminCalendarDashboard';
 import CalendarView from './Calendar/CalendarView';
+import ClientHomepage from './coaching/ClientHomepage';
 
 import DailyChallenge from './DailyChallenge';
 import WeeklyChallengeProgress from './WeeklyChallengeProgress';
@@ -57,6 +58,7 @@ import UpgradeModal from '@/components/UpgradeModal';
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<
     | 'overview'
+    | 'coaching'
     | 'content'
     | 'library'
     | 'calendar'
@@ -248,6 +250,11 @@ const Dashboard: React.FC = () => {
               <TabsTrigger value="mealplans" className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" /> Meal Plan Generator
               </TabsTrigger>
+
+              <TabsTrigger value="coaching" className="flex items-center gap-2">
+              <Users className="w-4 h-4" />
+              Coaching Clients
+            </TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview">
@@ -342,6 +349,9 @@ const Dashboard: React.FC = () => {
             <TabsContent value="whitelabel"><WhiteLabelDashboard /></TabsContent>
             {/* ✅ Updated Meal Plan Tab Content */}
             <TabsContent value="mealplans"><MealPlanAssistant /></TabsContent>
+            <TabsContent value="coaching">
+            <ClientHomepage />
+          </TabsContent>
           </Tabs>
         </div>
       </div>

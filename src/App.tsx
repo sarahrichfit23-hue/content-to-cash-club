@@ -13,6 +13,15 @@ import Login from "@/components/auth/Login";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import { TierProtectedRoute } from "@/components/TierProtectedRoute";
 import Upgrade from "@/pages/Upgrade";
+import ClientHomepage from "./components/coaching/ClientHomepage";
+import ClientPortalView from "./components/coaching/ClientPortalView";
+import PageEditor from "./components/coaching/PageEditor";
+import ClientPortalLogin from "./pages/ClientPortalLogin";
+import ClientPortalAcceptInvite from "./pages/ClientPortalAcceptInvite";
+import ErrorBoundary from "@/components/ErrorBoundary";
+import AdminRoute from "./components/admin/AdminRoute";
+import AdminPanel from "./pages/AdminPanel";
+
 
 function NotFound() {
   return (
@@ -88,6 +97,47 @@ export default function App() {
               element={
               <Checkout />} 
               />
+
+              {/* Coaching routes */}
+              <Route path="/coaching/clients" element={
+                <ErrorBoundary>
+                  <ProtectedRoute requireOnboarding>
+                    <ClientHomepage />
+                  </ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              <Route path="/coaching/portal/:clientId" element={
+                <ErrorBoundary>
+                  <ProtectedRoute requireOnboarding>
+                    <ClientPortalView />
+                  </ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              <Route path="/coaching/page/:pageId" element={
+                <ErrorBoundary>
+                  <ProtectedRoute requireOnboarding>
+                    <PageEditor />
+                  </ProtectedRoute>
+                </ErrorBoundary>
+              } />
+              
+              {/* Client Portal Protected Route */}
+              <Route path="/client-portal" element={
+                <ErrorBoundary>
+                  <ProtectedRoute>
+                    <ClientPortalView isClientView />
+                  </ProtectedRoute>
+                </ErrorBoundary>
+              } />
+
+ {/* Admin route */}
+              <Route path="/admin" element={
+                <ErrorBoundary>
+                  <AdminRoute>
+                    <AdminPanel />
+                  </AdminRoute>
+                </ErrorBoundary>
+              } />
             
               {/* 🚫 404 Fallback */}
               <Route path="*" element={<NotFound />} />

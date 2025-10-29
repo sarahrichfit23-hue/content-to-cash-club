@@ -1,7 +1,8 @@
+import "dotenv/config"; // <-- ensures .env variables are loaded!
 import express from "express";
 import Stripe from "stripe";
 
-const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2022-11-15" });
 const router = express.Router();
 
 router.post("/create-stripe-session", async (req, res) => {
@@ -13,7 +14,7 @@ router.post("/create-stripe-session", async (req, res) => {
       customer_email: email,
       line_items: [
         {
-          price: "price_XXXXXXXXXXXX", // Your Stripe price ID
+          price: "price_XXXXXXXXXXXX", // Replace with your actual Stripe price ID
           quantity: 1,
         },
       ],
