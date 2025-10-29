@@ -30,9 +30,7 @@ export default function Pricing() {
             <li>✓ 50 generations/month</li>
           </ul>
           <a
-            href="https://buy.stripe.com/eVq8wR0uc7EOaze5MBbjW0J"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/signup?plan=starter"
             style={{
               display: "inline-block",
               padding: "0.75rem 1.5rem",
@@ -75,9 +73,7 @@ export default function Pricing() {
             <li>✓ 300 generations/month</li>
           </ul>
           <a
-            href="https://buy.stripe.com/6oUbJ36SA7EO22I1wlbjW0K"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/signup?plan=pro"
             style={{
               display: "inline-block",
               padding: "0.75rem 1.5rem",
@@ -112,9 +108,7 @@ export default function Pricing() {
             <li>✓ Direct Slack access</li>
           </ul>
           <a
-            href="https://buy.stripe.com/6oU5kF6SA3oygXC8YNbjW0L"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/signup?plan=elite"
             style={{
               display: "inline-block",
               padding: "0.75rem 1.5rem",
