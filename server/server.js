@@ -99,7 +99,7 @@ app.get("/api/stripe/verify", async (req, res) => {
 
 // --- Mount other routers ---
 app.use("/", createStripeSession);
-app.use("/api/calendar", calendarRoutes);
+app.use("/api/Calendar", calendarRoutes);
 
 // --- OPENAI (Meal Plan Generator) CONFIG ---
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
