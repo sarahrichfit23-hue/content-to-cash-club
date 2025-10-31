@@ -2,17 +2,6 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthProvider';
 import { supabase } from '@/lib/supabaseClient';
 
-/**
- * Legacy/compatibility note:
- * This context exposes all old and new context fields that legacy code, new code,
- * or any component might expect. This means:
- * - `profile`: user profile object from Supabase
- * - `refreshProfile`: refreshes the profile
- * - `updateProfile`: updates the profile (for onboarding, BrandDNA, etc)
- * - `user`, `loading`, `brandDNA`, `hasPaid`, etc: legacy fields
- * - All functions are always defined (no-ops if not used)
- */
-
 type Profile = {
   id: string;
   full_name?: string | null;
@@ -23,11 +12,9 @@ type Profile = {
 } | null;
 
 type AppCtx = {
-  // Core
   profile: Profile;
   refreshProfile: () => Promise<void>;
   updateProfile: (fields: Record<string, any>) => Promise<void>;
-  // Legacy/compat fields
   user: any;
   loading: boolean;
   brandDNA: any;
@@ -53,7 +40,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [profile, setProfile] = useState<Profile>(null);
   const [loading, setLoading] = useState(true);
 
-  // Load user profile from Supabase
+  // Load user profile from Supabase, auto-create if missing
   const load = async () => {
     setLoading(true);
     if (!user) {
@@ -62,25 +49,33 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return;
     }
     try {
-      const { data, error } = await supabase
+      let { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', user.id)
         .maybeSingle();
-      if (error) throw error;
-      setProfile(
-        data ??
-          {
+
+      // If no profile row, create it!
+      if (!data) {
+        const { data: inserted, error: insertError } = await supabase
+          .from('profiles')
+          .insert({
             id: user.id,
+            email: user.email,
             full_name: user.user_metadata?.full_name ?? null,
-            // fill other legacy fields if needed
-          }
-      );
-    } catch {
-      setProfile({
-        id: user.id,
-        full_name: user.user_metadata?.full_name ?? null,
-      });
+            has_paid: false,
+            onboarding_completed: false,
+            brand_dna: {},
+          })
+          .select()
+          .maybeSingle();
+        if (insertError) throw insertError;
+        data = inserted;
+      }
+
+      setProfile(data ?? { id: user.id, full_name: user.user_metadata?.full_name ?? null });
+    } catch (e) {
+      setProfile({ id: user.id, full_name: user.user_metadata?.full_name ?? null });
     }
     setLoading(false);
   };
@@ -102,15 +97,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ready, user?.id]);
 
-  // Expose ALL legacy and new fields
   const value: AppCtx = {
     profile,
     refreshProfile: load,
     updateProfile,
-    user, // legacy: direct from useAuth
-    loading: !ready || loading, // legacy: "loading" is true if not ready or profile loading
-    brandDNA: profile?.brand_dna ?? null, // legacy: allow direct access to brandDNA
-    hasPaid: !!(profile && (profile.has_paid ?? false)), // legacy: allow direct access
+    user,
+    loading: !ready || loading,
+    brandDNA: profile?.brand_dna ?? null,
+    hasPaid: !!(profile && (profile.has_paid ?? false)),
     ready,
   };
 
@@ -121,10 +115,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-/**
- * Compatibility shim for old code (legacy hook)
- * Exposes all legacy fields and functions, always defined.
- */
 export function useAppContext() {
   const ctx = useApp();
   return {
