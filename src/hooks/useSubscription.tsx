@@ -31,17 +31,16 @@ export function useSubscription(userId: string) {
           .from("subscriptions")
           .select("*")
           .eq("user_id", userId)
-          .single();
+          .maybeSingle();
 
-        if (error) {
+        if (error && error.code !== 'PGRST116') {
           console.warn("⚠️ No subscription found:", error.message);
-          setSubscription(null);
-          return;
         }
 
-        setSubscription(data);
+        setSubscription(data || null);
       } catch (err) {
         console.error("❌ Failed to fetch subscription:", err);
+        setSubscription(null);
       }
     };
 
