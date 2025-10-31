@@ -13,12 +13,13 @@ dotenv.config();
 const app = express();
 
 // --- CORS CONFIG ---
-// Only allow your live frontend (no www) and localhost for development
+// Allow both www and non-www domains, plus localhost for development
 app.use(
   cors({
     origin: function (origin, callback) {
       const allowedOrigins = [
         "https://contenttocashclub.com",
+        "https://www.contenttocashclub.com",
         "http://localhost:5173"
       ];
       // Allow requests with no origin (like mobile apps, curl, or Postman)
