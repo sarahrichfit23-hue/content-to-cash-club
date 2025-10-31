@@ -34,10 +34,9 @@ const Hero: React.FC<HeroProps> = ({ onGetStarted }) => {
               Get monthly hand-crafted content packs, daily challenges, and AI tools that turn consistency into cash—all in one platform built for coaches who refuse to post generic content.
             </p>
 
-
             <div className="flex flex-col sm:flex-row gap-4">
               <button
-                onClick={onGetStarted}
+                onClick={() => window.location.href = 'https://www.contenttocashclub.com/signup'}
                 className="px-8 py-4 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white font-semibold rounded-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200 flex items-center justify-center gap-2"
               >
                 Start My Free Trial

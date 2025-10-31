@@ -2,8 +2,8 @@ import React, { useEffect } from "react";
 import { loadStripe } from "@stripe/stripe-js";
 import { Button } from "@/components/ui/button";
 
-// TODO: Replace with your real Stripe publishable key
-const stripePromise = loadStripe("pk_test_XXXXXXXXXXXXXXXXXXXXXXXX");
+// Use your live Stripe publishable key
+const stripePromise = loadStripe("pk_live_51KmoTeQdmrMeh91MqgIThXd8jprB3ZEhqUGlDR29xhb1U5NJ61xDvtPoMoJMiPUsxWsL7AUOXBUrfycKZoavE4ER00McuYPv5K");
 
 export default function Checkout() {
   useEffect(() => {

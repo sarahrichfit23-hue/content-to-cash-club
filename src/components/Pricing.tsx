@@ -30,7 +30,7 @@ export default function Pricing() {
             <li>✓ 50 generations/month</li>
           </ul>
           <a
-            href="/signup?plan=starter"
+            href="https://www.contenttocashclub.com/signup?plan=starter"
             style={{
               display: "inline-block",
               padding: "0.75rem 1.5rem",
@@ -73,7 +73,7 @@ export default function Pricing() {
             <li>✓ 300 generations/month</li>
           </ul>
           <a
-            href="/signup?plan=pro"
+            href="https://www.contenttocashclub.com/signup?plan=pro"
             style={{
               display: "inline-block",
               padding: "0.75rem 1.5rem",
@@ -108,7 +108,7 @@ export default function Pricing() {
             <li>✓ Direct Slack access</li>
           </ul>
           <a
-            href="/signup?plan=elite"
+            href="https://www.contenttocashclub.com/signup?plan=elite"
             style={{
               display: "inline-block",
               padding: "0.75rem 1.5rem",
