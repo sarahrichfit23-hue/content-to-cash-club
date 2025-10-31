@@ -16,13 +16,12 @@ const OnboardingQuiz: React.FC = () => {
   const { updateProfile, profile } = useApp();
   const navigate = useNavigate();
 
-  // Redirect to dashboard if already completed onboarding
+  // Redirect to dashboard if onboarding already completed
   useEffect(() => {
     if (profile?.onboarding_completed) {
       navigate('/dashboard', { replace: true });
     }
   }, [profile, navigate]);
-
 
   const questions = [
     {
@@ -39,9 +38,9 @@ const OnboardingQuiz: React.FC = () => {
     },
     {
       field: 'coreProblem',
-      title: 'What\'s their biggest problem?',
+      title: "What's their biggest problem?",
       subtitle: 'The one thing keeping them stuck',
-      placeholder: 'e.g., Can\'t lose the last 20lbs despite trying everything'
+      placeholder: "e.g., Can't lose the last 20lbs despite trying everything"
     },
     {
       field: 'coreOutcome',
@@ -51,13 +50,13 @@ const OnboardingQuiz: React.FC = () => {
     },
     {
       field: 'programName',
-      title: 'What\'s your program called?',
+      title: "What's your program called?",
       subtitle: 'Your signature offer name',
       placeholder: 'e.g., The Metabolic Reset Method™'
     },
     {
       field: 'programPrice',
-      title: 'What\'s your program price?',
+      title: "What's your program price?",
       subtitle: 'Your main offer investment',
       placeholder: 'e.g., $2,997'
     },
@@ -83,44 +82,67 @@ const OnboardingQuiz: React.FC = () => {
     if (step < questions.length - 1) {
       setStep(step + 1);
     } else {
-      // Show accountability setup after brand questions
       setShowAccountabilitySetup(true);
     }
   };
 
+  // ✅ Final step: save brand DNA + accountability + mark onboarding complete
   const handleAccountabilityComplete = async (data: {
     postingGoal: number;
     contentTypes: string[];
     checkinTime: string;
   }) => {
-    const brandDNA: BrandDNA = {
-      ...answers as BrandDNA,
-      currencyMetric: 'double revenue in 90 days',
-      proofElement: 'client success stories',
-      cta: 'Book a Strategy Audit',
-      complianceNote: 'Avoid medical claims'
-    };
-    
-    // Save brand DNA to profile
-    await updateProfile({
-      brand_dna: brandDNA,
-      onboarding_completed: true
-    });
+    try {
+      const brandDNA: BrandDNA = {
+        ...answers as BrandDNA,
+        currencyMetric: 'double revenue in 90 days',
+        proofElement: 'client success stories',
+        cta: 'Book a Strategy Audit',
+        complianceNote: 'Avoid medical claims'
+      };
 
-    // Save accountability preferences
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      await supabase.from('user_accountability').insert({
+      // 🪄 Get current Supabase user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        alert('User not found. Please log in again.');
+        navigate('/login');
+        return;
+      }
+
+      // 🧩 1️⃣ Update brand DNA + onboarding_completed in profiles
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({
+          brand_dna: brandDNA,
+          onboarding_completed: true
+        })
+        .eq('id', user.id);
+
+      if (profileError) {
+        console.error('❌ Failed to update onboarding status:', profileError.message);
+      }
+
+      // 🧠 2️⃣ Save accountability preferences
+      await supabase.from('user_accountability').upsert({
         user_id: user.id,
         posting_goal: data.postingGoal,
         preferred_content_types: data.contentTypes,
         daily_checkin_time: data.checkinTime
       });
-    }
-    
-    navigate('/dashboard');
-  };
 
+      // 🪄 3️⃣ Also update in local app context (keeps frontend in sync)
+      await updateProfile({
+        brand_dna: brandDNA,
+        onboarding_completed: true
+      });
+
+      // ✅ 4️⃣ Redirect to dashboard
+      navigate('/dashboard');
+    } catch (error: any) {
+      console.error('🚨 Error completing onboarding:', error.message);
+      alert('Something went wrong saving your onboarding data.');
+    }
+  };
 
   const handleAnswer = (value: string) => {
     setAnswers({ ...answers, [currentQuestion.field]: value });
@@ -146,7 +168,7 @@ const OnboardingQuiz: React.FC = () => {
               <span>{Math.round((showAccountabilitySetup ? 100 : ((step + 1) / (questions.length + 1)) * 100))}% Complete</span>
             </div>
             <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-yellow-600 to-olive-600 transition-all duration-500"
                 style={{ width: `${showAccountabilitySetup ? 100 : ((step + 1) / (questions.length + 1)) * 100}%` }}
               />
@@ -248,7 +270,6 @@ const OnboardingQuiz: React.FC = () => {
           </div>
         </div>
       </div>
-
     </>
   );
 };
