@@ -46,6 +46,21 @@ export default function SignUp() {
       }
       toast({ title: "Sign up successful!", description: "Check your email to confirm your account." });
 
+      // 1️⃣ Ensure a profile row is created for this new user before redirecting to Stripe
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await supabase
+          .from("profiles")
+          .insert({
+            id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name ?? null,
+            has_paid: false,
+            onboarding_completed: false,
+            brand_dna: {},
+          }, { upsert: true }); // upsert for safety in case user is re-signing up
+      }
+
       // Redirect to the appropriate Stripe Checkout link
       const plan = getPlanFromQuery();
       window.location.href = stripeLinks[plan];
