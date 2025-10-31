@@ -15,7 +15,7 @@ import { AppProvider } from "@/contexts/AppContext";
 // 🧭 Core Pages
 import Dashboard from "@/components/Dashboard";
 import Onboarding from "@/pages/Onboarding"; // ✅ Onboarding quiz page
-import BrandDNAWizard from "@/components/BrandDNAWizard"; // ✅ Brand DNA editor page
+import BrandDNAWizard from "@/components/brand/BrandDNAWizard"; // ✅ Brand DNA editor page
 
 // 🥗 Meal Plans
 import MealPlans from "@/pages/MealPlans";
