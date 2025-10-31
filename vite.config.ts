@@ -10,8 +10,8 @@ export default defineConfig(({ command }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  // ✅ Use relative base path for Vercel static hosting
-  base: "./",
+  // ✅ FIX: Absolute root base path for Vercel (prevents MIME-type errors)
+  base: "/",
   build: {
     outDir: "dist",
     assetsDir: "assets",
@@ -33,6 +33,6 @@ export default defineConfig(({ command }) => ({
   },
   preview: {
     port: 4173,
-    allowedHosts: ['content-to-cash-club.onrender.com'], // 👈 Fix for your error!
+    allowedHosts: ["content-to-cash-club.onrender.com"], // ✅ safe for local preview
   },
 }));
