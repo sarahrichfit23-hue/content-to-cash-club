@@ -11,13 +11,14 @@ const StripeSuccess: React.FC = () => {
   useEffect(() => {
     const verifyPayment = async () => {
       try {
-        if (!sessionId) {
-          console.warn("Missing Stripe session ID");
+        if (!sessionId || sessionId.startsWith("{") || sessionId.includes("CHECKOUT_SESSION_ID")) {
+          // Defensive: never allow a dummy session id to be used
+          console.warn("Missing or invalid Stripe session ID:", sessionId);
           navigate("/login");
           return;
         }
 
-        // ✅ Call your live backend on Render
+        // Call your backend with the real session id
         const response = await axios.get(
           `https://content-to-cash-backend.onrender.com/api/stripe/verify?session_id=${sessionId}`
         );
@@ -25,7 +26,7 @@ const StripeSuccess: React.FC = () => {
         if (response.data?.success) {
           console.log("✅ Payment verified, updating Supabase profile...");
 
-          // 🪄 1️⃣ Get the currently logged-in Supabase user
+          // 1️⃣ Get the currently logged-in Supabase user
           const {
             data: { user },
             error: userError,
@@ -37,7 +38,7 @@ const StripeSuccess: React.FC = () => {
             return;
           }
 
-          // 🪄 2️⃣ Update `has_paid` in Supabase
+          // 2️⃣ Update `has_paid` in Supabase
           const { error: updateError } = await supabase
             .from("profiles")
             .update({ has_paid: true })
@@ -49,7 +50,7 @@ const StripeSuccess: React.FC = () => {
             console.log("✅ Supabase profile updated (has_paid = true)");
           }
 
-          // 🧭 3️⃣ Redirect to Onboarding
+          // 3️⃣ Redirect to Onboarding
           navigate("/onboarding");
         } else {
           console.warn("Stripe session not verified");
