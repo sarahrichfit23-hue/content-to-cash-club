@@ -28,7 +28,7 @@ const FinalCTA: React.FC<FinalCTAProps> = ({ onGetStarted }) => {
             </p>
 
             <button
-              onClick={onGetStarted}
+              onClick={() => window.location.href = 'https://www.contenttocashclub.com/signup'}
               className="px-10 py-5 bg-white text-gray-900 font-bold text-lg rounded-lg hover:shadow-2xl transform hover:scale-105 transition-all duration-200 flex items-center justify-center gap-2 mx-auto"
             >
               Start My Free Trial

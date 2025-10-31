@@ -193,12 +193,12 @@ const Navigation: React.FC = () => {
                 >
                   Sign In
                 </Link>
-                <Link
-                  to="/signup"
+                <button
                   className="px-4 py-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white font-medium rounded-lg hover:shadow-md transition-all"
+                  onClick={() => window.location.href = 'https://www.contenttocashclub.com/signup'}
                 >
                   Get Started
-                </Link>
+                </button>
               </>
             )}
           </div>
