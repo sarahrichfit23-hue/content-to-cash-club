@@ -5,6 +5,10 @@ node_modules/
 dist/
 .vite/
 
+# Local environment
+.env
+.env.local
+.vercel/
 
 
 # Logs
