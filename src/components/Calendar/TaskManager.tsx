@@ -79,7 +79,7 @@ export default function TaskManager() {
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(10, 0, 0, 0);
 
-    const { error } = await supabase.from('calendar_events').insert({
+    const { error } = await supabase.from('Calendar_events').insert({
       user_id: user.id,
       title: task.title,
       description: task.description,

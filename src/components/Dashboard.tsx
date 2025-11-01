@@ -57,11 +57,9 @@ import GoogleCalendarConnect from "./Calendar/GoogleCalendarConnect";
 import { AdminCalendarDashboard } from "./Calendar/AdminCalendarDashboard";
 import CalendarView from "./Calendar/CalendarView";
 import ClientHomepage from "./coaching/ClientHomepage";
-
 import DailyChallenge from "./DailyChallenge";
 import WeeklyChallengeProgress from "./WeeklyChallengeProgress";
 import { getTodaysQuote } from "@/data/dailyQuotes";
-
 import ContentPackCard from "./ContentPackCard";
 import { seedPack } from "@/data/seedData";
 import BillingPortal from "./BillingPortal";
@@ -101,16 +99,14 @@ const Dashboard: React.FC = () => {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const stats = [
-    { label: "Assets Generated", value: "127", icon: <TrendingUp className="w-5 h-5" /> },
-    { label: "This Month", value: "42", icon: <Calendar className="w-5 h-5" /> },
-    { label: "Saved", value: "89", icon: <Users className="w-5 h-5" /> },
+    { label: "Assets Generated", value: "127", icon: <Sparkles className="w-5 h-5" /> },
+    { label: "This Month", value: "42", icon: <TrendingUp className="w-5 h-5" /> },
+    { label: "Saved", value: "89", icon: <Database className="w-5 h-5" /> },
     { label: "Community Wins", value: "15", icon: <Users className="w-5 h-5" /> },
   ];
 
   return (
     <>
-      <Navigation />
-
       <div className="min-h-screen bg-gray-50 pt-28">
         <div className="container mx-auto px-6 py-8">
           {/* Header */}
@@ -124,7 +120,6 @@ const Dashboard: React.FC = () => {
                   Your {seedPack.theme} content pack is ready to personalize.
                 </p>
               </div>
-
               <div className="flex items-center gap-2">
                 {/* 🍽️ Meal Plan Generator Button */}
                 <Button
@@ -134,7 +129,20 @@ const Dashboard: React.FC = () => {
                 >
                   🍽️ Meal Plan Generator
                 </Button>
-
+                {/* 🔗 Manage subscription (Stripe Customer Portal) */}
+                <Button
+                  onClick={() =>
+                    window.open(
+                      "https://billing.stripe.com/p/login/fZu7sN5Ow5wGfTy5MBbjW00",
+                      "_blank",
+                      "noopener,noreferrer"
+                    )
+                  }
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white"
+                  title="Open billing portal to manage or cancel your subscription"
+                >
+                  💳 Manage subscription
+                </Button>
                 {/* 💎 Upgrade button (modal) */}
                 {profile?.role !== "pro" && (
                   <>
@@ -144,7 +152,6 @@ const Dashboard: React.FC = () => {
                     >
                       💎 Upgrade
                     </Button>
-
                     {showUpgradeModal && (
                       <UpgradeModal
                         currentPlan={profile?.role || "starter"}
@@ -156,7 +163,6 @@ const Dashboard: React.FC = () => {
               </div>
             </div>
           </div>
-
           {/* 🚀 Brand DNA or Onboarding Section */}
           <div className="mb-10">
             {profile?.onboarding_completed ? (
@@ -188,7 +194,6 @@ const Dashboard: React.FC = () => {
               </div>
             )}
           </div>
-
           {/* Grace period alert */}
           {isInGracePeriod() && (
             <Alert className="mb-6 border-yellow-200 bg-yellow-50">
@@ -204,71 +209,55 @@ const Dashboard: React.FC = () => {
               </AlertDescription>
             </Alert>
           )}
-
           {/* ===== Dashboard Tabs ===== */}
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
             <TabsList className="mb-6 flex-wrap h-auto">
               <TabsTrigger value="overview" className="flex items-center gap-2">
                 <LayoutDashboard className="w-4 h-4" /> Dashboard Home
               </TabsTrigger>
-
-              <TabsTrigger value="Calendar" className="flex items-center gap-2">
+              <TabsTrigger value="calendar" className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4" />
                 Coach Calendar
               </TabsTrigger>
-
               <TabsTrigger value="accountability" className="flex items-center gap-2">
                 <Flame className="w-4 h-4" /> Accountability
               </TabsTrigger>
-
               <TabsTrigger value="branddna" className="flex items-center gap-2">
                 <Brain className="w-4 h-4" /> Brand DNA
               </TabsTrigger>
-
               <TabsTrigger value="ai" className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4" /> AI Generator
               </TabsTrigger>
-
               <TabsTrigger value="clientacquisition" className="flex items-center gap-2">
                 <Target className="w-4 h-4" /> Client Acquisition
               </TabsTrigger>
-
               <TabsTrigger value="content" className="flex items-center gap-2">
                 <Grid3x3 className="w-4 h-4" /> Content Packs
               </TabsTrigger>
-
               <TabsTrigger value="planner" className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" /> Life & Biz Board
               </TabsTrigger>
-
               <TabsTrigger value="subscribers" className="flex items-center gap-2">
                 <Database className="w-4 h-4" /> CRM / Subscribers
               </TabsTrigger>
-
               <TabsTrigger value="library" className="flex items-center gap-2">
                 <Library className="w-4 h-4" /> My Library
               </TabsTrigger>
-
               <TabsTrigger value="community" className="flex items-center gap-2">
                 <Users className="w-4 h-4" /> Community
               </TabsTrigger>
-
               <TabsTrigger value="sms" className="flex items-center gap-2">
                 <MessageSquare className="w-4 h-4" /> SMS
               </TabsTrigger>
-
               <TabsTrigger value="billing" className="flex items-center gap-2">
                 <CreditCard className="w-4 h-4" /> Billing
               </TabsTrigger>
-
               <TabsTrigger value="whitelabel" className="flex items-center gap-2">
                 <Palette className="w-4 h-4" /> White Label
               </TabsTrigger>
-
               <TabsTrigger value="mealplans" className="flex items-center gap-2">
                 <Calendar className="w-4 h-4" /> Meal Plan Generator
               </TabsTrigger>
-
               <TabsTrigger value="coaching" className="flex items-center gap-2">
                 <Users className="w-4 h-4" /> Coaching Clients
               </TabsTrigger>
@@ -281,7 +270,6 @@ const Dashboard: React.FC = () => {
                   "{getTodaysQuote()}"
                 </p>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
                 {stats.map((stat) => (
                   <Card key={stat.label} className="hover:shadow-md transition-shadow cursor-pointer">
@@ -297,7 +285,6 @@ const Dashboard: React.FC = () => {
                   </Card>
                 ))}
               </div>
-
               <div className="bg-gradient-to-r from-yellow-600 to-olive-600 rounded-2xl p-8 text-white">
                 <div className="flex items-center justify-between">
                   <div>
@@ -319,15 +306,13 @@ const Dashboard: React.FC = () => {
             <TabsContent value="accountability">
               <DailyChallenge />
             </TabsContent>
-
             <TabsContent value="branddna">
               <div className="space-y-6">
                 <BrandDNAPDFExport />
                 <BrandDNAWizard onComplete={() => setActiveTab("ai")} />
               </div>
             </TabsContent>
-
-            <TabsContent value="Calendar">
+            <TabsContent value="calendar">
               <div className="space-y-6">
                 <h2 className="text-2xl font-bold mb-4">Coach Calendar & Task Manager</h2>
                 <div className="bg-white rounded-2xl shadow-xl p-8 flex flex-col-reverse lg:flex-row gap-8">
@@ -344,7 +329,6 @@ const Dashboard: React.FC = () => {
                 {profile?.role === "admin" && <AdminCalendarDashboard />}
               </div>
             </TabsContent>
-
             <TabsContent value="ai">
               <AIContentGenerator />
             </TabsContent>

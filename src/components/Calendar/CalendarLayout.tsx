@@ -6,7 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { EventModal } from './EventModal';
 import { Button } from '@/components/ui/button';
 import { Plus, Video, Calendar as CalIcon } from 'lucide-react';
-import TaskManager from '@/components/calendar/TaskManager';     // ✅ no curly braces
+import TaskManager from '@/components/Calendar/TaskManager';     // ✅ no curly braces
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { toast } from 'sonner';
 
