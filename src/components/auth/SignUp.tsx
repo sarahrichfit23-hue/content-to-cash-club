@@ -33,19 +33,46 @@ export default function SignUp() {
    e.preventDefault();
    setLoading(true);
     try {
-      // 1) Send a magic link email so the user can log in after checkout
-      const { error: otpError } = await supabase.auth.signInWithOtp({
-      email,
-        options: {
-       emailRedirectTo: "https://www.contenttocashclub.com"
-        }
-      });
-     if (otpError) {
-     toast({
-   title: "Could not send login email",
-   description: otpError.message,
-      variant: "destructive",
-});
+      const { error } = await supabase.auth.signUp({
+     email,
+password,
+options: {
+  data: { full_name: email.split("@")[0] }
+  }
+  });
+  if (error) {
+    toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+    return;
+    }
+    toast({ title: "Sign up successful!", description: "Check your email to confirm your account." });
+
+    // Create a profile row if a user session exists (it might not until they confirm)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      await supabase
+      .from("profiles")
+      .insert(
+        {
+          id: user.id,
+          email: user.email,
+          full_name: user.user_metadata?.full_name ?? null,
+          has_paid: false,
+          onboarding_completed: false,
+          brand_dna: {},
+          },
+          { upsert: true }
+          );
+}
+
+const plan = getPlanFromQuery();
+window.location.href = stripeLinks[plan];
+} catch (err: any) {
+  toast({ title: "Unexpected error", description: String(err?.message || err), variant: "destructive" });
+  } finally {
+setLoading(false);
+}
+};
+
 return;
 }
 
