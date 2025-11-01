@@ -41,10 +41,16 @@ options: {
   }
   });
   if (error) {
-    toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+    toast({ title: "Sign up failed", 
+      description: error.message, 
+      variant: "destructive", 
+    });
     return;
     }
-    toast({ title: "Sign up successful!", description: "Check your email to confirm your account." });
+    toast({ 
+      title: "Sign up successful!", 
+      description: "Check your email to confirm your account.",
+     });
 
     // Create a profile row if a user session exists (it might not until they confirm)
     const { data: { user } } = await supabase.auth.getUser();
@@ -67,7 +73,11 @@ options: {
 const plan = getPlanFromQuery();
 window.location.href = stripeLinks[plan];
 } catch (err: any) {
-  toast({ title: "Unexpected error", description: String(err?.message || err), variant: "destructive" });
+  toast({ 
+  title: "Unexpected error", 
+  description: String(err?.message || err), 
+  variant: "destructive", 
+});
   } finally {
 setLoading(false);
 }
