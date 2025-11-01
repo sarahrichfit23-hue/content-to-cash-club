@@ -64,11 +64,13 @@ export default function App() {
           <BrowserRouter>
             <Routes>
              {/* 🔓 Public Routes */}
-           <Route path="/login" element={<Login />} />
-           <Route path="/signup" element={<SignUp />} />
-           <Route path="/success" element={<StripeSuccess />} />
-           {/* If you still want /checkout redirect, keep the next line; otherwise delete it */}
-           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+             <Route path="/success" element={<StripeSuccess />} />
+                         {/* Optional: keep only if you still want /checkout to redirect */}
+                        <Route path="/checkout" element={<Checkout />
+                      } 
+                    />
 
               {/* 🧭 Onboarding Flow */}
               <Route
@@ -174,6 +176,18 @@ export default function App() {
                     <ProtectedRoute>
                       <ClientPortalView isClientView />
                     </ProtectedRoute>
+                  </ErrorBoundary>
+                }
+              />
+
+              {/* 🛠️ Admin Area */}
+              <Route
+                path="/admin"
+                element={
+                  <ErrorBoundary>
+                    <AdminRoute>
+                      <AdminPanel />
+                    </AdminRoute>
                   </ErrorBoundary>
                 }
               />
