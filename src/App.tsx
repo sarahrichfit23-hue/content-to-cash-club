@@ -63,14 +63,32 @@ export default function App() {
         <AppProvider>
           <BrowserRouter>
             <Routes>
+
              {/* 🔓 Public Routes */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<SignUp />} />
-             <Route path="/success" element={<StripeSuccess />} />
-                         {/* Optional: keep only if you still want /checkout to redirect */}
-                        <Route path="/checkout" element={<Checkout />
-                      } 
-                    />
+             <Route path="/login" 
+             element={
+               <Login />
+             } 
+             />
+
+          <Route path="/signup" 
+          element={
+            <SignUp />
+             } 
+           />
+
+             <Route path="/success" 
+             element={
+               <StripeSuccess />
+             } 
+            />
+
+             {/* Optional: keep only if you still want /checkout to redirect */}
+             <Route path="/checkout" 
+               element={
+                <Checkout />
+             } 
+           />
 
               {/* 🧭 Onboarding Flow */}
               <Route
