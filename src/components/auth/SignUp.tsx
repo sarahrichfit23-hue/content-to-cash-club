@@ -38,9 +38,9 @@ options: { data: { full_name: email.split("@")[0] } },
 });
 if (error) {
 toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
-
 return;
 }
+
   toast({
 title: "Sign up successful!",
 description: "Check your email to confirm your account.",
