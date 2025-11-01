@@ -11,7 +11,7 @@ export default function SignUp() {
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+ 
   const [loading, setLoading] = useState(false);
 
   // Helper to get ?plan= from URL
@@ -30,21 +30,43 @@ export default function SignUp() {
   };
 
   const handleSignUp = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+   e.preventDefault();
+   setLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
+      // 1) Send a magic link email so the user can log in after checkout
+      const { error: otpError } = await supabase.auth.signInWithOtp({
+      email,
         options: {
-          data: { full_name: email.split("@")[0] } // Optionally set display name
+       emailRedirectTo: "https://www.contenttocashclub.com"
         }
       });
-      if (error) {
-        toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
-        return;
-      }
-      toast({ title: "Sign up successful!", description: "Check your email to confirm your account." });
+     if (otpError) {
+     toast({
+   title: "Could not send login email",
+   description: otpError.message,
+      variant: "destructive",
+});
+return;
+}
+
+toast({
+  title: "Check your email",
+  description: "We sent you a secure login link. Complete checkout now, then use that email to log in.",
+  });
+
+  // 2) Redirect straight to Stripe Payment Link for the selected plan
+  const plan = getPlanFromQuery();
+  window.location.href = stripeLinks[plan];
+  } catch (err: any) {
+    toast({
+      title: "Unexpected error",
+      description: String(err?.message || err),
+      variant: "destructive",
+      });
+      } finally {
+        setLoading(false);
+        }
+        };
 
       // 1️⃣ Ensure a profile row is created for this new user before redirecting to Stripe
       const { data: { user } } = await supabase.auth.getUser();
@@ -80,9 +102,7 @@ export default function SignUp() {
             <Label htmlFor="email">Email</Label>
             <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
           </div>
-          <div>
-            <Label htmlFor="password">Password</Label>
-            <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" required />
+        
           </div>
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Signing up..." : "Sign Up"}
