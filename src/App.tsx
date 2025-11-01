@@ -63,13 +63,12 @@ export default function App() {
         <AppProvider>
           <BrowserRouter>
             <Routes>
-              {/* 🔓 Public Routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<SignUp />} />
-
-              {/* 💳 Checkout & Stripe */}
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/auth/stripe-success" element={<StripeSuccess />} />
+             {/* 🔓 Public Routes */}
+           <Route path="/login" element={<Login />} />
+           <Route path="/signup" element={<SignUp />} />
+           <Route path="/success" element={<StripeSuccess />} />
+           {/* If you still want /checkout redirect, keep the next line; otherwise delete it */}
+           <Route path="/checkout" element={<Checkout />} />
 
               {/* 🧭 Onboarding Flow */}
               <Route
