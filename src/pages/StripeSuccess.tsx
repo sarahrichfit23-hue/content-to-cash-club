@@ -18,7 +18,7 @@ Your free trial has started. Check your email for your login link and instructio
 <p className="text-sm text-gray-500">
 Didn’t receive an email? Check your spam folder, or try signing in from the login page using your email.
 </p>
-<a href="/login" className="inline-block px-4 py-2 rounded-md bg-gray-900 text-white"></a>
+<a href="/login" className="inline-block px-4 py-2 rounded-md bg-gray-900 text-white">
 Go to Login
 </a>
 </div>
