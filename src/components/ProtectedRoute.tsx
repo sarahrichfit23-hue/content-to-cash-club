@@ -46,10 +46,10 @@ export default function ProtectedRoute({ children }: Props) {
     return <Navigate to={`/login?redirect=${redirect}`} replace />;
   }
 
-  // 💳 2. Logged in but not paid → go to checkout
-  if (profile && profile.has_paid === false) {
-    return <Navigate to="/checkout" replace />;
-  }
+  // 💳 2. Logged in but not paid → show plan selection (no auto-checkout)
+if (profile && profile.has_paid === false) {
+return ;
+}
 
   // 🧭 3. Paid but not onboarded → go to onboarding
   if (profile && profile.has_paid && !profile.onboarding_completed) {
