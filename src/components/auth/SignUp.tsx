@@ -12,9 +12,8 @@ const navigate = useNavigate();
 const location = useLocation();
 const [email, setEmail] = useState("");
 const [password, setPassword] = useState("");
-const [loading, setLoading] = useState(false);
+const [loading, setLoading] = useState(false)
 
-// Helper to get ?plan= from URL
 function getPlanFromQuery(): "starter" | "pro" | "elite" {
 const params = new URLSearchParams(location.search);
 const plan = params.get("plan");
@@ -22,7 +21,6 @@ if (plan === "pro" || plan === "elite") return plan;
 return "starter";
 }
 
-// Stripe checkout links
 const stripeLinks: Record<"starter" | "pro" | "elite", string> = {
 starter: "https://buy.stripe.com/eVq8wR0uc7EOaze5MBbjW0J",
 pro: "https://buy.stripe.com/6oUbJ36SA7EO22I1wlbjW0K",
@@ -36,25 +34,18 @@ try {
 const { error } = await supabase.auth.signUp({
 email,
 password,
-options: {
-data: { full_name: email.split("@")[0] }
- }
+options: { data: { full_name: email.split("@")[0] } },
 });
 if (error) {
-toast({
-title: "Sign up failed",
-description: error.message,
-variant: "destructive",
-});
+toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
+
 return;
 }
-
   toast({
 title: "Sign up successful!",
 description: "Check your email to confirm your account.",
 });
 
-  // Create a profile row if a user session exists (it might not until they confirm)
 const { data: { user } } = await supabase.auth.getUser();
 if (user) {
 await supabase
@@ -75,11 +66,7 @@ brand_dna: {},
   const plan = getPlanFromQuery();
 window.location.href = stripeLinks[plan];
 } catch (err: any) {
-toast({
-title: "Unexpected error",
-description: String(err?.message || err),
-variant: "destructive",
-});
+toast({ title: "Unexpected error", description: String(err?.message || err), variant: "destructive" });
 } finally {
 setLoading(false);
 }
